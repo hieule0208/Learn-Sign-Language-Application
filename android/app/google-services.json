@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "567828966693",
+    "firebase_url": "https://gestura-vn-sign-language-app-default-rtdb.firebaseio.com",
+    "project_id": "gestura-vn-sign-language-app",
+    "storage_bucket": "gestura-vn-sign-language-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567828966693:android:4fea2183b7e639f1b7fecc",
+        "android_client_info": {
+          "package_name": "com.example.how_to_use_provider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "567828966693-mdn7714pmq0rf6brfmmkh0sf6secevqf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDURwWH4154ttQVpmlflY0Ten7pCMUYSO0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "567828966693-mdn7714pmq0rf6brfmmkh0sf6secevqf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
