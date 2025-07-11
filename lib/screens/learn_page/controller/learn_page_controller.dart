@@ -7,7 +7,6 @@ import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page1/c
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page2/controller/practise_page2_provider.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_provider.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/wrong_page/UI/wrong_page.dart';
-import 'package:how_to_use_provider/screens/overview/UI/overview.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/utilities/score.dart';
 
@@ -74,7 +73,7 @@ class LearnPageController {
     ref.read(indexQuestionProvider.notifier).reset();
     ref.read(answerQuestionChosenProvider.notifier).reset();
     ref.read(answerQuestionSelectedProvider.notifier).reset();
-    ref.invalidate(learnDataProvider);
+    ref.invalidate(learnDataStateProvider);
     ref.read(amountScoreGainedProvider.notifier).reset();
     ref.read(listWordUpdatedProvider.notifier).reset();
   }

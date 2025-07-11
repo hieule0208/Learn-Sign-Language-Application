@@ -72,16 +72,13 @@ class _OverViewSliderItemState extends ConsumerState<OverViewSliderItem> {
             ),
           ),
           //button
-          Container(
-            
-            child: ElevatedButtonCustom(
-              widget.titleButton,
-              widget.onPressed,
-              AppColors.background,
-              widget.mainColor,
-              16,
-              true,
-            ),
+          ElevatedButtonCustom(
+            widget.titleButton,
+            widget.onPressed,
+            AppColors.background,
+            widget.mainColor,
+            16,
+            true,
           ),
         ],
       ),

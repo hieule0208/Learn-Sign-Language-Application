@@ -26,50 +26,60 @@ class _ScenarioProgressListTileState
   bool _isPressed = false;
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(bottom: 10),
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: widget.goDetailTopic,
-            onTapDown: (details) {
-              setState(() {
-                _isPressed = true;
-              });
-            },
-            onTapUp: (details) {
-              setState(() {
-                _isPressed = false;
-              });
-            },
-            onTapCancel: () {
-              setState(() {
-                _isPressed = false;
-              });
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                decoration: BoxDecoration(
-                color: _isPressed ? AppColors.primary.withOpacity(0.9) : AppColors.primary,
-                borderRadius: BorderRadius.circular(20),
-                ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: widget.goDetailTopic,
+          onTapDown: (details) {
+            setState(() {
+              _isPressed = true;
+            });
+          },
+          onTapUp: (details) {
+            setState(() {
+              _isPressed = false;
+            });
+          },
+          onTapCancel: () {
+            setState(() {
+              _isPressed = false;
+            });
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric( vertical: 15),
+            decoration: BoxDecoration(
+              color:
+                  _isPressed
+                      ? AppColors.secondBackground.withAlpha(20)
+                      : AppColors.background,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // nếu mà topic đã hoàn thành
                       widget.topic.numberOfLearnedWord /
                                   widget.topic.numberOfWord ==
                               1
+                          // hiển thị dấu tích là đã xong
                           ? Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              
                               borderRadius: BorderRadius.circular(99),
+                              border: Border.all(color: AppColors.primary, width: 3)
                             ),
-                            child: Icon(FontAwesomeIcons.check, color: AppColors.primary),
+                            child: Icon(
+                              FontAwesomeIcons.check,
+                              color: AppColors.primary,
+                            ),
                           )
+                          // Còn nếu chưa xong thì hiển thị progress-bar
                           : Stack(
                             alignment: Alignment.center,
                             children: [
@@ -77,8 +87,8 @@ class _ScenarioProgressListTileState
                                 width: 40,
                                 height: 40,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  backgroundColor: AppColors.textSub,
+                                  color: AppColors.primary,
+                                  backgroundColor: AppColors.secondBackground,
                                   value:
                                       widget.topic.numberOfLearnedWord /
                                       widget.topic.numberOfWord,
@@ -93,7 +103,7 @@ class _ScenarioProgressListTileState
                                 child: Text(
                                   "${(widget.topic.numberOfLearnedWord / widget.topic.numberOfWord * 100).floor()}%",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.primary,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -101,12 +111,13 @@ class _ScenarioProgressListTileState
                             ],
                           ),
                       SizedBox(width: 20),
+                      // nội dung chính của topic 
                       Container(
                         margin: EdgeInsets.only(right: 50),
                         child: Text(
                           widget.topic.name,
                           style: TextStyle(
-                            color: AppColors.secondBackground,
+                            color: AppColors.primary,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -116,58 +127,62 @@ class _ScenarioProgressListTileState
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                SizedBox(height: 10),
+                Divider()
+              ],
             ),
           ),
-          Positioned.fill(
-            child: IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: _isPressed ? 0.1 : 0.0,
-                duration: Duration(milliseconds: 300),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
+        ),
+        // chuyển động của nút
+        Positioned.fill(
+          child: IgnorePointer(
+            child: AnimatedOpacity(
+              opacity: _isPressed ? 0.1 : 0.0,
+              duration: Duration(milliseconds: 300),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
             ),
           ),
-          widget.topic.hasStartedLearn && !widget.topic.isCompleted
-              ? Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 10, right: 20),
-                    child: ElevatedButton(
-                      onPressed: () => widget.continueLearn,
-                      child: Text(
-                        "Tiếp tục",
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+        ),
+        // button dành cho mấy cái đã học nhưng chưa xong
+        widget.topic.hasStartedLearn && !widget.topic.isCompleted
+            ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  padding: EdgeInsets.only(top: 10, right: 20),
+                  child: ElevatedButton(
+                    onPressed: () => widget.continueLearn,
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          return AppColors.background;
+                        },
                       ),
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (Set<WidgetState> states) {
-                            return AppColors.background;
-                          },
-                        ),
-                        overlayColor: WidgetStateProperty.resolveWith<Color>((
-                          Set<WidgetState> states,
-                        ) {
-                          return AppColors.secondBackground;
-                        }),
+                      overlayColor: WidgetStateProperty.resolveWith<Color>((
+                        Set<WidgetState> states,
+                      ) {
+                        return AppColors.secondBackground;
+                      }),
+                    ),
+                    child: Text(
+                      "Tiếp tục",
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ],
-              )
-              : Container(),
-        ],
-      ),
+                ),
+              ],
+            )
+            : Container(),
+      ],
     );
   }
 }

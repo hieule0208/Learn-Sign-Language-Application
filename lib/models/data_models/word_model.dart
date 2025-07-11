@@ -40,4 +40,20 @@ class WordModel {
       'isMastered': isMastered,
     };
   }
+
+  // Hàm initial để tạo một instance WordModel với giá trị mặc định
+  factory WordModel.initial() {
+    return WordModel(
+      id: '',
+      word: '',
+      description: '',
+      score: 0,
+      isLearned: false,
+      replayTimes: 0,
+      isMastered: false,
+    );
+  }
+
+  // Hàm initial để trả về List<WordModel> rỗng cho dictDataProvider
+  static List<WordModel> initialList() => [];
 }

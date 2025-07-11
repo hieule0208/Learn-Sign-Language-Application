@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:how_to_use_provider/screens/login/sub_pages/login_email/controller/login_email_controller.dart' show LoginEmailController;
+import 'package:how_to_use_provider/screens/login/sub_pages/login_email/controller/login_email_controller.dart'
+    show LoginEmailController;
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/elevated_button_custom.dart';
 import 'package:how_to_use_provider/widgets/text_form_field_custom.dart';
@@ -15,9 +15,8 @@ class LoginEmail extends StatefulHookConsumerWidget {
 
 class _LoginEmailState extends ConsumerState<LoginEmail> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _passwordAgainController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +27,8 @@ class _LoginEmailState extends ConsumerState<LoginEmail> {
         child: AppBar(
           surfaceTintColor: Colors.transparent,
           backgroundColor: Colors.transparent,
-          flexibleSpace: Container(
-            child: Center(
-              child: Image.asset("lib/assets/image/gestura_logo.png"),
-            ),
+          flexibleSpace: Center(
+            child: Image.asset("lib/assets/image/gestura_logo.png"),
           ),
         ),
       ),

@@ -44,7 +44,6 @@ class _OverViewInfoCardState extends ConsumerState<OverViewInfoCard> {
 
     return GestureDetector(
       onTap: () {
-        print("On tapped");
         widget.voidCallback();
       },
       onTapDown: (details) {

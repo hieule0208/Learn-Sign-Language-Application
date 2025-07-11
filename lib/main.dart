@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/singleton_classes/app_singleton.dart';
 import 'package:how_to_use_provider/screens/home/UI/home.dart';
-import 'package:how_to_use_provider/screens/introduce/UI/introduce.dart'
-    show Introduce;
+import 'package:how_to_use_provider/screens/introduce/UI/introduce.dart';
+
 import 'package:how_to_use_provider/screens/login/UI/login.dart';
-import 'package:how_to_use_provider/screens/login/controller/login_provider.dart';
 import 'package:how_to_use_provider/screens/sign_up/UI/sign_up.dart';
 
 void main() async {

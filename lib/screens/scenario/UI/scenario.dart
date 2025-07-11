@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/data_models/topic_model.dart';
 import 'package:how_to_use_provider/screens/scenario/controller/scenario_controller.dart';
@@ -24,14 +23,12 @@ class _ScenarioState extends ConsumerState<Scenario> {
   String _searchQuery = '';
   Timer? _debounce;
 
-  CarouselSliderController _carouselSliderController =
+  final CarouselSliderController _carouselSliderController =
       CarouselSliderController();
 
   void changeSelectedCard(int index) {
     setState(() {
       _selectedIndex = index;
-
-      print(_selectedIndex);
     });
   }
 
@@ -41,7 +38,6 @@ class _ScenarioState extends ConsumerState<Scenario> {
       setState(() {
         _searchQuery = _searchController.text;
       });
-      print('Từ khóa tìm kiếm: $_searchQuery');
     });
   }
 
@@ -51,115 +47,111 @@ class _ScenarioState extends ConsumerState<Scenario> {
       setState(() {
         _searchQuery = _searchController.text;
       });
-      print('Từ khóa tìm kiếm: $_searchQuery');
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final topicData = ref.watch(topicDataProvider);
+    final topicData = ref.watch(topicDataStateProvider);
+    List<TopicModel>? inProgressTopics =
+        ScenarioController().categorizeTopics(topicData)["inProgressTopics"];
+    List<TopicModel>? exploreTopics =
+        ScenarioController().categorizeTopics(topicData)["exploreTopics"];
+    List<TopicModel>? finishTopics =
+        ScenarioController().categorizeTopics(topicData)["finishTopics"];
 
-    return Column(
-      children: [
-        SizedBox(height: 10),
-
-        // Tab bar
-        Row(
+    return topicData.isNotEmpty
+        ? Column(
           children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  _carouselSliderController.animateToPage(
-                    0,
-                    duration: Durations.medium1,
-                    curve: Curves.ease,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color:
-                            _selectedIndex == 0
-                                ? AppColors.textPrimary
-                                : Colors.transparent,
-                        width: _selectedIndex == 0 ? 3.0 : 0.0,
-                      ),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Học từ mới",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  _carouselSliderController.animateToPage(
-                    1,
-                    duration: Durations.medium1,
-                    curve: Curves.ease,
-                  );
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  padding: const EdgeInsets.only(bottom: 10),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color:
-                            _selectedIndex == 1
-                                ? AppColors.textPrimary
-                                : Colors.transparent,
-                        width: _selectedIndex == 1 ? 3.0 : 0.0,
-                      ),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Luyện tập",
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        //search bar
-        SearchBarCustom(
-          _searchController,
-          _selectedIndex == 0 ? _onSearchMasterChanged : _onSearchLearnChanged,
-        ),
+            SizedBox(height: 10),
 
-        //List topic
-        topicData.when(
-          data: (topics) {
-            final inProgressTopics =
-                ScenarioController().categorizeTopics(
-                  topics,
-                )["inProgressTopics"];
-            final exploreTopics =
-                ScenarioController().categorizeTopics(topics)["exploreTopics"];
-            final finishTopics =
-                ScenarioController().categorizeTopics(topics)["finishTopics"];
-            return Expanded(
+            // Tab bar
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      _carouselSliderController.animateToPage(
+                        0,
+                        duration: Durations.medium1,
+                        curve: Curves.ease,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      padding: const EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                _selectedIndex == 0
+                                    ? AppColors.textPrimary
+                                    : Colors.transparent,
+                            width: _selectedIndex == 0 ? 3.0 : 0.0,
+                          ),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Học từ mới",
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      _carouselSliderController.animateToPage(
+                        1,
+                        duration: Durations.medium1,
+                        curve: Curves.ease,
+                      );
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      padding: const EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                _selectedIndex == 1
+                                    ? AppColors.textPrimary
+                                    : Colors.transparent,
+                            width: _selectedIndex == 1 ? 3.0 : 0.0,
+                          ),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Luyện tập",
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            //search bar
+            SearchBarCustom(
+              _searchController,
+              _selectedIndex == 0
+                  ? _onSearchMasterChanged
+                  : _onSearchLearnChanged,
+            ),
+            Expanded(
               child: CarouselSlider(
                 carouselController: _carouselSliderController,
                 items: [
@@ -172,7 +164,10 @@ class _ScenarioState extends ConsumerState<Scenario> {
                         //Progress
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 20,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
@@ -206,7 +201,10 @@ class _ScenarioState extends ConsumerState<Scenario> {
                         SizedBox(height: 10),
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 20,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
@@ -248,7 +246,10 @@ class _ScenarioState extends ConsumerState<Scenario> {
                       children: [
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                          padding: EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 20,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
@@ -293,16 +294,9 @@ class _ScenarioState extends ConsumerState<Scenario> {
                   },
                 ),
               ),
-            );
-          },
-          error: (Object error, StackTrace stackTrace) {
-            return Text('Error: $error');
-          },
-          loading: () {
-            return Expanded(child: Center(child: CircularProgressIndicator()));
-          },
-        ),
-      ],
-    );
+            ),
+          ],
+        )
+        : Center(child: CircularProgressIndicator());
   }
 }

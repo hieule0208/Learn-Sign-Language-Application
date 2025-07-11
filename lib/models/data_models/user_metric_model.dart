@@ -1,5 +1,3 @@
-import 'package:how_to_use_provider/models/data_models/topic_model.dart';
-
 class UserMetricModel {
   final int totalScore;
   final int wordScore;
@@ -11,6 +9,7 @@ class UserMetricModel {
   final int learnedVideos;
   final int masteredConversation;
   final int learnedConversation;
+  final String currentTopic;
 
   UserMetricModel({
     required this.totalScore,
@@ -23,6 +22,7 @@ class UserMetricModel {
     required this.learnedVideos,
     required this.masteredConversation,
     required this.learnedConversation,
+    required this.currentTopic,
   });
 
   factory UserMetricModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +37,24 @@ class UserMetricModel {
       learnedVideos: json['learnedVideos'] as int? ?? 0,
       masteredConversation: json['masteredConversation'] as int? ?? 0,
       learnedConversation: json['learnedConversation'] as int? ?? 0,
+      currentTopic: json["currentTopic"] as String? ?? "",
+    );
+  }
+
+  // Hàm initial để tạo instance với giá trị mặc định
+  factory UserMetricModel.initial() {
+    return UserMetricModel(
+      totalScore: 0,
+      wordScore: 0,
+      videoScore: 0,
+      practiseScore: 0,
+      masteredWords: 0,
+      learnedWords: 0,
+      masteredVideos: 0,
+      learnedVideos: 0,
+      masteredConversation: 0,
+      learnedConversation: 0,
+      currentTopic: "",
     );
   }
 }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:how_to_use_provider/screens/general_provider.dart';
-
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/UI/infor_show.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_controller.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_provider.dart';
+import 'package:how_to_use_provider/screens/overview/controller/overview_provider.dart';
 
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/elevated_button_custom.dart';
@@ -22,7 +21,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   Widget build(BuildContext context) {
     final score = ref.watch(amountScoreGainedProvider);
     final listResultWord = ref.watch(listWordUpdatedProvider);
-    final metric = ref.watch(metricProvider);
+    final metric = ref.watch(userMetricOverviewStateProvider);
     final newLearnedWord = ref.watch(amountNewWordProvider);
     return Padding(
       padding: EdgeInsetsGeometry.only(bottom: 20, left: 20, right: 20),
@@ -30,30 +29,28 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Thông báo chúc mừng
-          Container(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  "Hoàn     \n     Thành",
-                  style: TextStyle(
-                    fontSize: 50,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.primary,
-                  ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "Hoàn     \n     Thành",
+                style: TextStyle(
+                  fontSize: 50,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.primary,
                 ),
-
-                Container(
-                  margin: EdgeInsets.only(top: 20),
-                  child: Icon(
-                    FontAwesomeIcons.circleCheck,
-                    size: 80,
-                    color: AppColors.learnPrimary,
-                  ),
+              ),
+          
+              Container(
+                margin: EdgeInsets.only(top: 20),
+                child: Icon(
+                  FontAwesomeIcons.circleCheck,
+                  size: 80,
+                  color: AppColors.learnPrimary,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
 
           // Thống kê kết quả
@@ -76,7 +73,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                   Expanded(
                     child: InforShow(
                       "Từ mới",
-                      metric?.learnedWords!,
+                      metric?.learnedWords,
                       newLearnedWord,
                     ),
                   ),

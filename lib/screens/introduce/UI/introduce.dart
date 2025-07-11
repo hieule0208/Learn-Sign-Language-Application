@@ -70,19 +70,22 @@ class _IntroduceState extends ConsumerState<Introduce> {
                     ],
                   ),
                   SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButtonCustom(
-                          "Tôi đã có tài khoản",
-                          () => IntroduceController().navigateToLogin(context),
-                          AppColors.primary,
-                          Colors.transparent,
-                          15,
-                          false,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButtonCustom(
+                            "Tôi đã có tài khoản",
+                            () => IntroduceController().navigateToLogin(context),
+                            AppColors.primary,
+                            Colors.transparent,
+                            16,
+                            false,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

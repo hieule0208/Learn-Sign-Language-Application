@@ -12,10 +12,12 @@ import 'package:how_to_use_provider/widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
 
 class PractisePage2 extends StatefulHookConsumerWidget {
+  final VideoPlayerController videoPlayerController;
   final DataLearnModel dataLearnModel;
 
   PractisePage2({
     super.key,
+    required this.videoPlayerController,
     required this.dataLearnModel,
   });
 
@@ -32,7 +34,7 @@ class _PractisePage2State extends ConsumerState<PractisePage2> {
   //   mainContent:
   //       "https://firebasestorage.googleapis.com/v0/b/gestura-vn-sign-language-app.firebasestorage.app/o/%C4%90i%CC%A3a%20chi%CC%89.mp4?alt=media&token=fb514812-0fa5-47bf-af62-ce1002daceed",
   // );
-  TextEditingController _textFieldController = TextEditingController();
+  final TextEditingController _textFieldController = TextEditingController();
   List<String> listAnswer = [];
 
   @override
@@ -48,7 +50,7 @@ class _PractisePage2State extends ConsumerState<PractisePage2> {
           Column(
             children: [
               VideoPlayerWidget(
-                videoPath: widget.dataLearnModel.mainContent,
+                videoPlayerController: widget.videoPlayerController,
               ),
               SizedBox(height: 20),
               Container(
@@ -104,7 +106,7 @@ class _PractisePage2State extends ConsumerState<PractisePage2> {
                 spacing: 8,
                 runSpacing: 4,
                 children:
-                    listAnswer!.map((String answer) {
+                    listAnswer.map((String answer) {
                       return AnswerChip(
                         answer,
                         () => ref

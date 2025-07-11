@@ -5,12 +5,15 @@ import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_con
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/elevated_button_custom.dart';
 import 'package:how_to_use_provider/widgets/video_player_widget.dart';
+import 'package:video_player/video_player.dart';
 
 class StudyPage extends ConsumerStatefulWidget {
+  final VideoPlayerController videoPlayerController;
   final DataLearnModel dataLearnModel;
 
   StudyPage({
     super.key,
+    required this.videoPlayerController,
     required this.dataLearnModel,
   });
 
@@ -27,7 +30,7 @@ class _StudyPageState extends ConsumerState<StudyPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           VideoPlayerWidget(
-            videoPath: widget.dataLearnModel.mainContent,
+            videoPlayerController: widget.videoPlayerController,
           ),
 
           Row(

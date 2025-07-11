@@ -5,14 +5,12 @@ class DataLearnModel {
   final String mainContent;
   final WordModel word;
   final List<String>? answers;
-  final String? correctAnswer;
 
   DataLearnModel({
     required this.type,
     required this.mainContent,
     required this.word,
     this.answers,
-    this.correctAnswer,
   });
 
   factory DataLearnModel.fromJson(Map<String, dynamic> json) {
@@ -23,13 +21,12 @@ class DataLearnModel {
     }
 
     return DataLearnModel(
-      type: json['type'] as String? ?? 'unknown', // Giá trị mặc định nếu type null
-      mainContent: json['mainContent'] as String? ?? '', // Chuỗi rỗng nếu mainContent null
-      word: WordModel.fromJson(wordJson), // Parse WordModel
+      type: json['type'] as String? ?? 'unknown',
+      mainContent: json['mainContent'] as String? ?? '',
+      word: WordModel.fromJson(wordJson),
       answers: json['answers'] != null
           ? List<String>.from(json['answers'] as List<dynamic>)
-          : null, // Danh sách null nếu answers không có
-      correctAnswer: json['correctAnswer'] as String?, // Giữ null nếu correctAnswer không có
+          : null,
     );
   }
 
@@ -39,7 +36,34 @@ class DataLearnModel {
       'mainContent': mainContent,
       'word': word.toJson(),
       'answers': answers,
-      'correctAnswer': correctAnswer,
     };
+  }
+
+  // Hàm initial để tạo instance mặc định
+  factory DataLearnModel.initial() {
+    return DataLearnModel(
+      type: 'unknown',
+      mainContent: '',
+      word: WordModel.initial(),
+      answers: null,
+    );
+  }
+
+  // Hàm initial để trả về List<DataLearnModel> rỗng
+  static List<DataLearnModel> initialList() => [];
+
+  // Hàm copyWith để cập nhật bất biến
+  DataLearnModel copyWith({
+    String? type,
+    String? mainContent,
+    WordModel? word,
+    List<String>? answers,
+  }) {
+    return DataLearnModel(
+      type: type ?? this.type,
+      mainContent: mainContent ?? this.mainContent,
+      word: word ?? this.word,
+      answers: answers ?? this.answers,
+    );
   }
 }

@@ -49,7 +49,6 @@ class LoginEmailController {
 
         appSingleton.setUserId(FirebaseAuth.instance.currentUser?.uid);
         appSingleton.setLoginStatus(true);
-        print("appSingleton.isLogin, appSingleton.userId");
         navigateToHome(context);
       } on FirebaseAuthException catch (e) {
         Navigator.of(context).pop(); // Đóng dialog loading

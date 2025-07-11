@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
-  final String videoPath;
-  final bool isAsset; // Xác định videoPath là asset hay network
+  final VideoPlayerController videoPlayerController;
 
   const VideoPlayerWidget({
     super.key,
-    required this.videoPath,
-    this.isAsset = false,
+    required this.videoPlayerController,
   });
 
   @override
@@ -17,7 +15,6 @@ class VideoPlayerWidget extends StatefulWidget {
 }
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  late VideoPlayerController _videoPlayerController;
   ChewieController? _chewieController;
   bool _isInitialized = false;
 
@@ -28,19 +25,17 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   }
 
   Future<void> _initializeVideoPlayer() async {
-    // Khởi tạo VideoPlayerController dựa trên loại video
-    _videoPlayerController = widget.isAsset
-        ? VideoPlayerController.asset(widget.videoPath)
-        : VideoPlayerController.networkUrl(Uri.parse(widget.videoPath));
-
     try {
-      await _videoPlayerController.initialize();
+      // Đảm bảo controller đã được khởi tạo trước khi sử dụng
+      if (!widget.videoPlayerController.value.isInitialized) {
+        await widget.videoPlayerController.initialize();
+      }
       setState(() {
         _chewieController = ChewieController(
-          videoPlayerController: _videoPlayerController,
+          videoPlayerController: widget.videoPlayerController,
           autoPlay: false, // Không tự động phát
           looping: false, // Không lặp lại
-          aspectRatio: _videoPlayerController.value.aspectRatio,
+          aspectRatio: widget.videoPlayerController.value.aspectRatio,
           showControls: true,
           allowedScreenSleep: false,
           errorBuilder: (context, errorMessage) {
@@ -63,7 +58,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   void dispose() {
-    _videoPlayerController.dispose();
+    // Chỉ dispose ChewieController, không dispose VideoPlayerController
     _chewieController?.dispose();
     super.dispose();
   }
@@ -72,11 +67,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   Widget build(BuildContext context) {
     return _isInitialized && _chewieController != null
         ? AspectRatio(
-            aspectRatio: _videoPlayerController.value.aspectRatio,
+            aspectRatio: widget.videoPlayerController.value.isInitialized
+                ? widget.videoPlayerController.value.aspectRatio
+                : 16 / 9,
             child: Chewie(controller: _chewieController!),
           )
-        : const Center(
-            child: CircularProgressIndicator(),
+        : AspectRatio(
+            aspectRatio: 16 / 9,
+            child: const Center(child: CircularProgressIndicator()),
           );
   }
 }

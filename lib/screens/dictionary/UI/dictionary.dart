@@ -2,7 +2,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:how_to_use_provider/screens/dictionary/controller/dict_controller.dart';
 import 'package:how_to_use_provider/screens/dictionary/controller/dict_provider.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
@@ -22,23 +21,22 @@ class _DictionaryState extends ConsumerState<Dictionary> {
   final CarouselSliderController _carouselSliderController =
       CarouselSliderController();
 
-  void changeListViewIndex(index) {
+  void changeListViewIndex(int index) {
     setState(() {
       _selectedIndex = index;
-      print(_selectedIndex);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final dictData = ref.watch(dictDataProvider);
+    final dictData = ref.watch(dictDataStateProvider);
+    final masteredList =
+        DictController().categorizeWords(dictData)["masteredList"];
+    final learnedList =
+        DictController().categorizeWords(dictData)["learnedList"];
 
-    return dictData.when(
-      data: (dictData) {
-
-        final masteredList = DictController().categorizeWords(dictData)["masteredList"];
-        final learnedList = DictController().categorizeWords(dictData)["learnedList"];
-        return Scaffold(
+    return dictData.isNotEmpty
+        ? Scaffold(
           backgroundColor: Colors.white,
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(220),
@@ -92,55 +90,51 @@ class _DictionaryState extends ConsumerState<Dictionary> {
                       SizedBox(height: 10),
                       Row(
                         children: [
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Đã hoàn thành",
-                                  style: TextStyle(
-                                    color: AppColors.secondBackground,
-                                    fontSize: 15,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Đã hoàn thành",
+                                style: TextStyle(
+                                  color: AppColors.secondBackground,
+                                  fontSize: 15,
+                                  // fontWeight: FontWeight.bold,
                                 ),
-                                SizedBox(height: 10),
-                                Text(
-                                  masteredList!.length.toString(),
-                                  style: TextStyle(
-                                    color: AppColors.secondBackground,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 25,
-                                  ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                masteredList!.length.toString(),
+                                style: TextStyle(
+                                  color: AppColors.secondBackground,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                           SizedBox(width: 20),
-                          Container(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Bắt đầu học",
-                                  style: TextStyle(
-                                    color: AppColors.secondBackground,
-                                    fontSize: 15,
-                                    // fontWeight: FontWeight.bold,
-                                  ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Bắt đầu học",
+                                style: TextStyle(
+                                  color: AppColors.secondBackground,
+                                  fontSize: 15,
+                                  // fontWeight: FontWeight.bold,
                                 ),
-                                SizedBox(height: 10),
+                              ),
+                              SizedBox(height: 10),
 
-                                Text(
-                                  learnedList!.length.toString(),
-                                  style: TextStyle(
-                                    color: AppColors.secondBackground,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 25,
-                                  ),
+                              Text(
+                                learnedList!.length.toString(),
+                                style: TextStyle(
+                                  color: AppColors.secondBackground,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 25,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -277,13 +271,7 @@ class _DictionaryState extends ConsumerState<Dictionary> {
               ],
             ),
           ),
-        );
-      },
-      error: (error, stack) => Center(child: Text('Lỗi: $error')),
-      loading: () => const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
-      ),
-    );
+        )
+        : Center(child: CircularProgressIndicator());
   }
 }
