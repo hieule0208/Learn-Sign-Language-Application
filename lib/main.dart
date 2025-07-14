@@ -1,27 +1,60 @@
+import 'package:camera/camera.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/singleton_classes/app_singleton.dart';
 import 'package:how_to_use_provider/screens/home/UI/home.dart';
 import 'package:how_to_use_provider/screens/introduce/UI/introduce.dart';
-
 import 'package:how_to_use_provider/screens/login/UI/login.dart';
 import 'package:how_to_use_provider/screens/sign_up/UI/sign_up.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await AppSingleton().loadFromStorage(); 
+  await AppSingleton().loadFromStorage();
+
   runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends HookConsumerWidget {
+class MyApp extends StatefulHookConsumerWidget {
   const MyApp({super.key});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isLoggedIn = AppSingleton().isLogin; 
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    requestStoragePermission();
+  }
+
+  void requestStoragePermission() async {
+    // Check if the platform is not web, as web has no permissions
+    if (!kIsWeb) {
+      // Request storage permission
+      var status = await Permission.storage.status;
+      if (!status.isGranted) {
+        await Permission.storage.request();
+      }
+
+      // Request camera permission
+      var cameraStatus = await Permission.camera.status;
+      if (!cameraStatus.isGranted) {
+        await Permission.camera.request();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoggedIn = AppSingleton().isLogin;
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: "Gestura",
       initialRoute: isLoggedIn ? "/home" : "/",
       routes: {

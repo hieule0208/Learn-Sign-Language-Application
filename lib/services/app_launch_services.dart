@@ -1,22 +1,20 @@
 import 'dart:convert';
 import 'package:how_to_use_provider/models/data_models/user_metric_model.dart';
+import 'package:how_to_use_provider/models/singleton_classes/app_singleton.dart';
 import 'package:http/http.dart' as http;
 
 class AppLaunchServices {
   final String baseUrl =
-      'https://685e100b7b57aebd2af7edd5.mockapi.io/sign-language';
+      'https://signlang-ai-main-et3a0s.laravel.cloud/api';
 
   Future<UserMetricModel> fetchUserMetricOverview() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/user-overview'));
+      final response = await http.get(Uri.parse('$baseUrl/user-metric/${AppSingleton().userId}'));
+      print(AppSingleton().userId);
+      print(response.statusCode);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        if (data.isNotEmpty) {
-          final Map<String, dynamic> userData = data[0];
-          return UserMetricModel.fromJson(userData);
-        } else {
-          throw Exception('No data found in response');
-        }
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return UserMetricModel.fromJson(data);
       } else {
         throw Exception('Failed to load data: Status code ${response.statusCode} - ${response.body}');
       }

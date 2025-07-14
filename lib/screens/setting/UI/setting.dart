@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:how_to_use_provider/models/data_models/word_model.dart';
 import 'package:how_to_use_provider/models/singleton_classes/app_singleton.dart';
 import 'package:how_to_use_provider/screens/setting/controller/setting_controller.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
-import 'package:how_to_use_provider/widgets/dictionary_word_list_item.dart';
 
 class Setting extends StatefulHookConsumerWidget {
   const Setting({super.key});

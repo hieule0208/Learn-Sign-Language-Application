@@ -1,6 +1,9 @@
 
+import 'dart:developer';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/data_models/word_model.dart';
+import 'package:how_to_use_provider/services/api_services.dart';
 
 
 // theo dõi xem có thêm bao nhiêu điểm
@@ -69,6 +72,46 @@ final listWordUpdatedProvider =
     StateNotifierProvider<ListWordUpdatedNotifier, List<WordModel>?>(
       (ref) => ListWordUpdatedNotifier(),
     );
+
+class PostUpdatedWordsNotifier extends StateNotifier<AsyncValue<bool>> {
+  final Ref ref;
+
+  PostUpdatedWordsNotifier(this.ref) : super(const AsyncValue.data(false));
+
+  Future<void> postWords() async {
+    try {
+      state = const AsyncValue.loading();
+      log("PostUpdatedWordsNotifier: Starting POST request", name: 'PostUpdatedWordsNotifier');
+
+      // Lấy danh sách từ listWordUpdatedProvider
+      final words = ref.read(listWordUpdatedProvider) ?? [];
+      if (words.isEmpty) {
+        log("PostUpdatedWordsNotifier: No words to post", name: 'PostUpdatedWordsNotifier');
+        state = const AsyncValue.data(false);
+        return;
+      }
+
+      final apiService = ApiServices();
+      final success = await apiService.postUpdatedWords(words);
+      state = AsyncValue.data(success);
+      log("PostUpdatedWordsNotifier: POST completed, success: $success",
+          name: 'PostUpdatedWordsNotifier');
+    } catch (e, stackTrace) {
+      log("PostUpdatedWordsNotifier: Error posting words - $e",
+          name: 'PostUpdatedWordsNotifier', error: e, stackTrace: stackTrace);
+      state = const AsyncValue.data(false);
+    }
+  }
+
+  void reset() {
+    state = const AsyncValue.data(false);
+  }
+}
+
+final postUpdatedWordsProvider =
+    StateNotifierProvider<PostUpdatedWordsNotifier, AsyncValue<bool>>(
+  (ref) => PostUpdatedWordsNotifier(ref),
+);
 
 // theo dõi xem có bao nhiêu từ được học mới
 

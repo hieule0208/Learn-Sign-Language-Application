@@ -8,7 +8,6 @@ import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_pro
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page1/UI/practise_page1.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page2/UI/practise_page2.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/UI/result_page.dart';
-import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_provider.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/study_page/UI/study_page.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 

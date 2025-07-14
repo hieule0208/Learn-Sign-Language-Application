@@ -1,8 +1,11 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:how_to_use_provider/main.dart';
 import 'package:how_to_use_provider/screens/conversation/UI/conservation.dart';
 import 'package:how_to_use_provider/screens/home/controller/home_controller.dart';
+import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page3/UI/practise_page3.dart';
 import 'package:how_to_use_provider/screens/overview/UI/overview.dart';
 import 'package:how_to_use_provider/screens/scenario/UI/scenario.dart';
 import 'package:how_to_use_provider/screens/video/UI/video.dart';
@@ -25,7 +28,6 @@ class _HomeState extends ConsumerState<Home> {
   void navigateBottomBar(int index) {
     setState(() {
       _selectedIndex = index;
-      print(_selectedIndex);
     });
   }
 

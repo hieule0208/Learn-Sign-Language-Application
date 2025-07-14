@@ -1,11 +1,13 @@
+import "dart:async";
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:how_to_use_provider/models/data_models/user_metric_model.dart';
 import 'package:how_to_use_provider/screens/overview/controller/overview_controller.dart';
 import 'package:how_to_use_provider/screens/overview/controller/overview_provider.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
+import 'package:how_to_use_provider/widgets/error_notification.dart';
+import 'package:how_to_use_provider/widgets/loading_state.dart';
 import 'package:how_to_use_provider/widgets/over_view_info_card.dart';
 import 'package:how_to_use_provider/widgets/over_view_slider_item.dart';
 
@@ -19,14 +21,41 @@ class Overview extends StatefulHookConsumerWidget {
 class _OverviewState extends ConsumerState<Overview> {
   int _selectedIndex = 0;
   bool _isPressed = false;
+  bool _isTimeOut = false;
+  Timer? _timer;
 
   final CarouselSliderController _carouselSliderController =
       CarouselSliderController();
 
+  @override
+  void initState() {
+    super.initState();
+    _startTimer(); // Khởi động timer trong initState
+  }
+
+  // Hàm khởi động timer
+  void _startTimer() {
+    _timer?.cancel(); // Hủy timer cũ nếu đang chạy
+    _timer = Timer(const Duration(seconds: 7), () {
+      if (!mounted) return;
+      final metric = ref.read(userMetricOverviewStateProvider);
+      if (metric.currentTopic == "") {
+        setState(() {
+          _isTimeOut = true;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Hủy timer khi widget dispose
+    super.dispose();
+  }
+
   void changeSelectedCard(int index) {
     setState(() {
       _selectedIndex = index;
-      print(_selectedIndex);
     });
   }
 
@@ -41,8 +70,28 @@ class _OverviewState extends ConsumerState<Overview> {
         OverviewController().getCurrentLevelInfo(totalScore)["nextLevelScore"];
     String rank = OverviewController().getCurrentLevelInfo(totalScore)["title"];
 
-    if (metric == UserMetricModel.initial()) {
-      return Center(child: Image.asset("lib/assets/image/gestura_logo.png"));
+    if (metric.currentTopic == "") {
+      return Center(
+        child:
+            _isTimeOut
+                ? ErrorNotification(
+                  onReload: () {
+                    ref
+                        .read(userMetricOverviewStateProvider.notifier)
+                        .initialize();
+                    setState(() {
+                      _isTimeOut = false;
+                      _startTimer();
+                    });
+                  },
+                  onGoHome: () {},
+                  isOverview: false,
+                )
+                : LoadingState(
+                  imagePath: "lib/assets/image/gestura_logo.png",
+                  size: 150,
+                ),
+      );
     } else {
       return Stack(
         children: [

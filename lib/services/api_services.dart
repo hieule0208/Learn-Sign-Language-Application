@@ -92,4 +92,28 @@ class ApiServices {
       throw Exception("Error fetching data: $e");
     }
   }
+
+  Future<bool> postUpdatedWords(List<WordModel> words) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/updated-words'), // Thay bằng endpoint thực tế
+        headers: {
+          'Content-Type': 'application/json',
+          // Thêm header nếu cần, ví dụ: 'Authorization': 'Bearer token',
+        },
+        body: jsonEncode(words.map((word) => word.toJson()).toList()),
+      );
+
+      if (response.statusCode == 200) {
+        print('POST successful: ${response.body}');
+        return true;
+      } else {
+        throw Exception('Failed to post updated words: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error posting updated words: $e');
+    }
+  }
+
+  
 }

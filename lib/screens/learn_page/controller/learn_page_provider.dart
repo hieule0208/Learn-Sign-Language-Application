@@ -14,29 +14,34 @@ class LearnDataStateNotifier extends StateNotifier<List<DataLearnModel>> {
   }
 
   Future<void> initialize() async {
-    final apiService = ApiServices();
-    // Lấy dữ liệu từ API và cập nhật trạng thái
-    state = await apiService.fetchLearnData();
-    print("${state} đã lấy được mấy cái này");
+    try {
+      final apiService = ApiServices();
+      // Lấy dữ liệu từ API và cập nhật trạng thái
+      state = await apiService.fetchLearnData();
+      log("$state đã lấy được mấy cái này");
 
-    // Lọc các phần tử có type là 'study' và cập nhật amountNewWordProvider
-    final studyItems = state.where((item) => item.type == 'study').toList();
-    ref.read(amountNewWordProvider.notifier).set(studyItems.length);
-    print("Đã cập nhật số từ mới");
+      // Lọc các phần tử có type là 'study' và cập nhật amountNewWordProvider
+      final studyItems = state.where((item) => item.type == 'study').toList();
+      ref.read(amountNewWordProvider.notifier).set(studyItems.length);
+      log("Đã cập nhật số từ mới");
 
-    // Cập nhật câu hỏi đầu tiên
-    if (state.isNotEmpty) {
-      ref.read(questionProvider.notifier).set(state[0]);
-      print("Đã cập nhật câu đầu tiên");
+      // Cập nhật câu hỏi đầu tiên
+      if (state.isNotEmpty) {
+        ref.read(questionProvider.notifier).set(state[0]);
+        log("Đã cập nhật câu đầu tiên");
+      }
+
+      // Cập nhật URL list
+      await ref
+          .read(preloadStateProvider.notifier)
+          .updateUrlsAndInitialize(
+            state.map((item) => item.mainContent).toList(),
+          );
+      log("Đã cập nhật danh sách url");
+    } catch (e, stack) {
+      log("Lỗi khi khởi tạo LearnDataStateNotifier: $e\n$stack");
+      state = [];
     }
-
-    // Cập nhật URL list
-    ref
-        .read(preloadStateProvider.notifier)
-        .updateUrlsAndInitialize(
-          state.map((item) => item.mainContent).toList(),
-        );
-    print("Đã cập nhật danh sách url");
   }
 
   void reset() => state = [];
