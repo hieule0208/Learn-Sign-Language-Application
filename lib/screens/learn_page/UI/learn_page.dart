@@ -7,6 +7,7 @@ import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_con
 import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_provider.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page1/UI/practise_page1.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page2/UI/practise_page2.dart';
+import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page3/UI/practise_page3.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/UI/result_page.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/study_page/UI/study_page.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
@@ -23,8 +24,7 @@ class _LearnPageState extends ConsumerState<LearnPage> {
   Widget build(BuildContext context) {
     final learnDataAsync = ref.watch(learnDataStateProvider);
     final questionIndex = ref.watch(indexQuestionProvider);
-    final preloadVideo = ref.watch(preloadStateProvider); 
-    
+    final preloadVideo = ref.watch(preloadStateProvider);
 
     return learnDataAsync.isNotEmpty && preloadVideo.controllers.isNotEmpty
         ? Scaffold(
@@ -47,7 +47,11 @@ class _LearnPageState extends ConsumerState<LearnPage> {
               Expanded(
                 child:
                     questionIndex < learnDataAsync.length
-                        ? _buildContent(learnDataAsync, preloadVideo, questionIndex)
+                        ? _buildContent(
+                          learnDataAsync,
+                          preloadVideo,
+                          questionIndex,
+                        )
                         : const ResultPage(),
               ),
             ],
@@ -56,16 +60,33 @@ class _LearnPageState extends ConsumerState<LearnPage> {
         : Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 
-  Widget _buildContent(List<DataLearnModel> data, PreloadModel preload, int index) {
+  Widget _buildContent(
+    List<DataLearnModel> data,
+    PreloadModel preload,
+    int index,
+  ) {
     switch (data[index].type) {
       case 'study':
-        return StudyPage(dataLearnModel: data[index], videoPlayerController: preload.controllers[index]!);
+        return StudyPage(
+          dataLearnModel: data[index],
+          videoPlayerController: preload.controllers[index]!,
+        );
       case 'practise1':
-        return PractisePage1(dataLearnModel: data[index], videoPlayerController: preload.controllers[index]!);
+        return PractisePage1(
+          dataLearnModel: data[index],
+          videoPlayerController: preload.controllers[index]!,
+        );
       case 'practise2':
-        return PractisePage2(dataLearnModel: data[index], videoPlayerController: preload.controllers[index]!);
+        return PractisePage2(
+          dataLearnModel: data[index],
+          videoPlayerController: preload.controllers[index]!,
+        );
+      case 'practise3':
+        return PractisePage3(dataLearnModel: data[index]);
       default:
-        return Center(child: Text('Loại câu hỏi không hợp lệ: ${data[index].type}'));
+        return Center(
+          child: Text('Loại câu hỏi không hợp lệ: ${data[index].type}'),
+        );
     }
   }
 }

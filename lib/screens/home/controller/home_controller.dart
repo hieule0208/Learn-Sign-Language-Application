@@ -8,7 +8,7 @@ class HomeController {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PractisePage3(),
+        builder: (context) => Dictionary(),
       ),
     );
   }

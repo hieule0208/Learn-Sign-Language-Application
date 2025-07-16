@@ -5,13 +5,15 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:how_to_use_provider/models/data_models/data_learn_model.dart';
+import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page3/Controller/practise_page3_controller.dart';
+import 'package:how_to_use_provider/services/api_services.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/loading_state.dart';
 
 class PractisePage3 extends StatefulWidget {
-  const PractisePage3({super.key});
+  const PractisePage3({super.key, required this.dataLearnModel});
 
-  // final DataLearnModel dataLearnModel;
+  final DataLearnModel dataLearnModel;
 
   @override
   State<PractisePage3> createState() => PractisePage3State();
@@ -22,6 +24,8 @@ class PractisePage3State extends State<PractisePage3> {
   Future<void>? _initializeControllerFuture;
   String? _error;
   XFile? image;
+  int replayTime = 0;
+  bool? isCorrect = true;
 
   @override
   void initState() {
@@ -82,6 +86,39 @@ class PractisePage3State extends State<PractisePage3> {
     _initCamera(); // Khởi động lại camera
   }
 
+  void confirmLogic(XFile image) async {
+    final apiService = ApiServices();
+    String? answer;
+    try {
+      answer = await apiService
+          .postCapturedImage(image)
+          .timeout(const Duration(seconds: 7), onTimeout: () => null);
+    } catch (e) {
+      return null;
+    }
+
+    print(answer); 
+
+    if (answer == null) {
+      retry();
+      setState(() {
+        isCorrect = null;
+        replayTime++;
+      });
+      return;
+    }
+
+    if (answer.toLowerCase() == widget.dataLearnModel.word.word.toLowerCase()) {
+      print("Đúng rồi thằng ML");
+    } else {
+      setState(() {
+        retry();
+        isCorrect = false;
+        replayTime++;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
@@ -92,12 +129,52 @@ class PractisePage3State extends State<PractisePage3> {
     }
 
     return Scaffold(
-      appBar: AppBar(),
+      backgroundColor: AppColors.background,
       body: Container(
         padding: EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // thông báo lỗi
+            isCorrect == null
+                ? Container(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.watchBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.watchPrimary, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Gửi dữ liệu lỗi, vui lòng thử lại!",
+                      style: TextStyle(
+                        color: AppColors.watchPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )
+                : isCorrect == false
+                ? Container(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.watchBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.watchPrimary, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Đáp án sai, vui lòng thử lại!",
+                      style: TextStyle(
+                        color: AppColors.watchPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )
+                : Container(),
             // khung ảnh
             // Khi ảnh chưa được chụp thì hiện khung chụp
             image == null
@@ -226,7 +303,7 @@ class PractisePage3State extends State<PractisePage3> {
                 ),
             // Nội dung câu hỏi
             Text(
-              "Xe máy",
+              widget.dataLearnModel.word.word,
               style: TextStyle(
                 color: AppColors.primary,
                 fontSize: 40,
@@ -320,7 +397,7 @@ class PractisePage3State extends State<PractisePage3> {
                       height: 100,
                       width: 175,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () => confirmLogic(image!),
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
                             AppColors.primary,
