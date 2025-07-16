@@ -30,6 +30,7 @@ class _DictionaryState extends ConsumerState<Dictionary> {
   @override
   Widget build(BuildContext context) {
     final dictData = ref.watch(dictDataStateProvider);
+    print(dictData);
     final masteredList =
         DictController().categorizeWords(dictData)["masteredList"];
     final learnedList =

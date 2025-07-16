@@ -4,22 +4,26 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/data_models/data_learn_model.dart';
+import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_provider.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page3/Controller/practise_page3_controller.dart';
+import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_provider.dart';
 import 'package:how_to_use_provider/services/api_services.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
+import 'package:how_to_use_provider/utilities/score.dart';
 import 'package:how_to_use_provider/widgets/loading_state.dart';
 
-class PractisePage3 extends StatefulWidget {
+class PractisePage3 extends StatefulHookConsumerWidget {
   const PractisePage3({super.key, required this.dataLearnModel});
 
   final DataLearnModel dataLearnModel;
 
   @override
-  State<PractisePage3> createState() => PractisePage3State();
+  ConsumerState<PractisePage3> createState() => PractisePage3State();
 }
 
-class PractisePage3State extends State<PractisePage3> {
+class PractisePage3State extends ConsumerState<PractisePage3> {
   CameraController? _controller;
   Future<void>? _initializeControllerFuture;
   String? _error;
@@ -86,18 +90,18 @@ class PractisePage3State extends State<PractisePage3> {
     _initCamera(); // Khởi động lại camera
   }
 
-  void confirmLogic(XFile image) async {
+  void confirmLogic(XFile imageCaptured) async {
     final apiService = ApiServices();
     String? answer;
     try {
       answer = await apiService
-          .postCapturedImage(image)
+          .postCapturedImage(imageCaptured)
           .timeout(const Duration(seconds: 7), onTimeout: () => null);
     } catch (e) {
       return null;
     }
 
-    print(answer); 
+    print(answer);
 
     if (answer == null) {
       retry();
@@ -110,6 +114,22 @@ class PractisePage3State extends State<PractisePage3> {
 
     if (answer.toLowerCase() == widget.dataLearnModel.word.word.toLowerCase()) {
       print("Đúng rồi thằng ML");
+
+      // dispose các cái khác nữa
+      _disposeCamera();
+      image = null;
+      replayTime = 0;
+      isCorrect = true;
+      setState(() {});
+
+      // Thực hiện add từ vào trong list báo cáo lại cho server
+      ref.read(amountScoreGainedProvider.notifier).increment(Score.practise);
+      ref
+          .read(listWordUpdatedProvider.notifier)
+          .add(widget.dataLearnModel.word);
+
+      // Tăng index để chuyển sang bài khác
+      ref.read(indexQuestionProvider.notifier).increment();
     } else {
       setState(() {
         retry();
@@ -117,6 +137,16 @@ class PractisePage3State extends State<PractisePage3> {
         replayTime++;
       });
     }
+  }
+
+  void skipPractise() {
+    _disposeCamera();
+    image = null;
+    replayTime = 0;
+    isCorrect = true;
+    setState(() {});
+    
+    ref.read(indexQuestionProvider.notifier).increment();
   }
 
   @override
@@ -312,12 +342,130 @@ class PractisePage3State extends State<PractisePage3> {
             ),
 
             // Hệ thống nút điểu khiển
-            image == null
-                // Nút chụp ảnh
-                ? Container(
+            replayTime <= 2
+                ? image == null
+                    // Nút chụp ảnh
+                    ? Container(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      height: 100,
+                      width: 220,
+                      child: ElevatedButton(
+                        onPressed: () => takePhoto(),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                            AppColors.primary,
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              FontAwesomeIcons.camera,
+                              size: 30,
+                              color: AppColors.background,
+                            ),
+                            SizedBox(width: 20),
+                            Text(
+                              "Chụp ảnh",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.background,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                    : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // Nút thử lại
+                        Container(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          height: 100,
+                          width: 150,
+                          child: ElevatedButton(
+                            onPressed: () => retry(),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                AppColors.primary,
+                              ),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.rotateRight,
+                                  size: 25,
+                                  color: AppColors.background,
+                                ),
+                                SizedBox(width: 20),
+                                Text(
+                                  "Thử lại",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.background,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Nút xác nhận
+                        Container(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          height: 100,
+                          width: 175,
+                          child: ElevatedButton(
+                            onPressed: () => confirmLogic(image!),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                AppColors.primary,
+                              ),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.check,
+                                  size: 25,
+                                  color: AppColors.background,
+                                ),
+                                SizedBox(width: 20),
+
+                                Text(
+                                  "Xác nhận",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.background,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                : Container(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   height: 100,
-                  width: 220,
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => takePhoto(),
                     style: ButtonStyle(
@@ -340,7 +488,7 @@ class PractisePage3State extends State<PractisePage3> {
                         ),
                         SizedBox(width: 20),
                         Text(
-                          "Chụp ảnh",
+                          "Bỏ qua",
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -350,86 +498,6 @@ class PractisePage3State extends State<PractisePage3> {
                       ],
                     ),
                   ),
-                )
-                : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    // Nút thử lại
-                    Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      height: 100,
-                      width: 150,
-                      child: ElevatedButton(
-                        onPressed: () => retry(),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                            AppColors.primary,
-                          ),
-                          shape: MaterialStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              FontAwesomeIcons.rotateRight,
-                              size: 25,
-                              color: AppColors.background,
-                            ),
-                            SizedBox(width: 20),
-                            Text(
-                              "Thử lại",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.background,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Nút xác nhận
-                    Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      height: 100,
-                      width: 175,
-                      child: ElevatedButton(
-                        onPressed: () => confirmLogic(image!),
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                            AppColors.primary,
-                          ),
-                          shape: MaterialStateProperty.all(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              FontAwesomeIcons.check,
-                              size: 25,
-                              color: AppColors.background,
-                            ),
-                            SizedBox(width: 20),
-
-                            Text(
-                              "Xác nhận",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.background,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
           ],
         ),

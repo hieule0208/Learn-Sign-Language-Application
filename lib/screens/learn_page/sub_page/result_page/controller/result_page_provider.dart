@@ -76,7 +76,9 @@ final listWordUpdatedProvider =
 class PostUpdatedWordsNotifier extends StateNotifier<AsyncValue<bool>> {
   final Ref ref;
 
-  PostUpdatedWordsNotifier(this.ref) : super(const AsyncValue.data(false));
+  PostUpdatedWordsNotifier(this.ref) : super(const AsyncValue.loading()) {
+    postWords();
+  }
 
   Future<void> postWords() async {
     try {
@@ -85,6 +87,7 @@ class PostUpdatedWordsNotifier extends StateNotifier<AsyncValue<bool>> {
 
       // Lấy danh sách từ listWordUpdatedProvider
       final words = ref.read(listWordUpdatedProvider) ?? [];
+      print("Lấy được từ rồi nè");
       if (words.isEmpty) {
         log("PostUpdatedWordsNotifier: No words to post", name: 'PostUpdatedWordsNotifier');
         state = const AsyncValue.data(false);
@@ -93,6 +96,7 @@ class PostUpdatedWordsNotifier extends StateNotifier<AsyncValue<bool>> {
 
       final apiService = ApiServices();
       final success = await apiService.postUpdatedWords(words);
+      print("vừa post xong nè $success");
       state = AsyncValue.data(success);
       log("PostUpdatedWordsNotifier: POST completed, success: $success",
           name: 'PostUpdatedWordsNotifier');

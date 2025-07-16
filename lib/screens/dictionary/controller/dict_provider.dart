@@ -16,6 +16,7 @@ class DictDataStateNotifier extends StateNotifier<List<WordModel>> {
       final apiService = ApiServices();
       // Lấy dữ liệu từ API và cập nhật trạng thái
       final wordData = await apiService.fetchMyWordData();
+      print("dữ liệu được lấy $wordData");
       state = wordData;
       log("DictDataStateNotifier: Fetched ${wordData.length} words", name: 'DictDataStateNotifier');
     } catch (e, stackTrace) {

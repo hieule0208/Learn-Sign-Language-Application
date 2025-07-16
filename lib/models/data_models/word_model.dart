@@ -18,14 +18,21 @@ class WordModel {
   });
 
   factory WordModel.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value) {
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) return value == '1' || value.toLowerCase() == 'true';
+      return false;
+    }
+
     return WordModel(
-      id: json['id'] as String? ?? '', // Chuỗi rỗng nếu id null
-      word: json['word'] as String? ?? '', // Chuỗi rỗng nếu word null
-      description: json['description'] as String? ?? '', // Chuỗi rỗng nếu description null
-      score: (json['score'] as num?)?.toInt() ?? 0, // 0 nếu score null
-      isLearned: json['isLearned'] as bool? ?? false, // false nếu isLearned null
-      replayTimes: (json['replayTimes'] as num?)?.toInt() ?? 0, // 0 nếu replayTimes null
-      isMastered: json['isMastered'] as bool? ?? false, // false nếu isMastered null
+      id: json['id'] as String? ?? '',
+      word: json['word'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      score: (json['score'] as num?)?.toInt() ?? 0,
+      isLearned: parseBool(json['isLearned']),
+      replayTimes: (json['replayTimes'] as num?)?.toInt() ?? 0,
+      isMastered: parseBool(json['isMastered']),
     );
   }
 
