@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:how_to_use_provider/screens/learn_page/UI/learn_page.dart';
 import 'package:how_to_use_provider/utilities/level_rank.dart';
 import 'package:intl/intl.dart';

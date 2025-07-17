@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
+// ignore: depend_on_referenced_packages
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// StreamProvider kiểm tra tình trạng Internet thật sự

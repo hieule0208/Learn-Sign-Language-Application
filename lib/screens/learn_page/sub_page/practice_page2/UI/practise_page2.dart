@@ -15,7 +15,7 @@ class PractisePage2 extends StatefulHookConsumerWidget {
   final VideoPlayerController videoPlayerController;
   final DataLearnModel dataLearnModel;
 
-  PractisePage2({
+  const PractisePage2({
     super.key,
     required this.videoPlayerController,
     required this.dataLearnModel,
@@ -26,14 +26,7 @@ class PractisePage2 extends StatefulHookConsumerWidget {
 }
 
 class _PractisePage2State extends ConsumerState<PractisePage2> {
-  // DataLearnModel dataLearnModel = DataLearnModel(
-  //   "",
-  //   ["Xe máy", "Cha, bố", "Nhà ở", "Địa chỉ"],
-  //   3,
-  //   type: "practise1",
-  //   mainContent:
-  //       "https://firebasestorage.googleapis.com/v0/b/gestura-vn-sign-language-app.firebasestorage.app/o/%C4%90i%CC%A3a%20chi%CC%89.mp4?alt=media&token=fb514812-0fa5-47bf-af62-ce1002daceed",
-  // );
+ 
   final TextEditingController _textFieldController = TextEditingController();
   List<String> listAnswer = [];
 

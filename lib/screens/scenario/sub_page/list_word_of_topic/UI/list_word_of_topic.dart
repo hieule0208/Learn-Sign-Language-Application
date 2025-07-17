@@ -40,7 +40,7 @@ class _ListWordOfTopicState extends ConsumerState<ListWordOfTopic> {
                     // CircularProgressBar
                     Stack(
                       children: [
-                        Container(
+                        SizedBox(
                           height: MediaQuery.of(context).size.width / 4,
                           width: MediaQuery.of(context).size.width / 4,
                           child: CircularProgressIndicator(
@@ -52,7 +52,7 @@ class _ListWordOfTopicState extends ConsumerState<ListWordOfTopic> {
                             strokeWidth: 10,
                           ),
                         ),
-                        Container(
+                        SizedBox(
                           height: MediaQuery.of(context).size.width / 4,
                           width: MediaQuery.of(context).size.width / 4,
                           child: Center(

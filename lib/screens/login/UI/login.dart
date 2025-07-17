@@ -70,7 +70,7 @@ class _LoginState extends ConsumerState<Login> {
                     ),
                     SignInOutButton(
                       "Đăng nhập với Email",
-                      () => LoginController().NavigateToLoginEmail(context),
+                      () => LoginController().navigateToLoginEmail(context),
                       Icon(FontAwesomeIcons.envelope, color: Colors.white),
                       AppColors.textPrimary,
                     ),

@@ -10,7 +10,7 @@ class PractisePage1 extends ConsumerStatefulWidget {
   final VideoPlayerController videoPlayerController;
   final DataLearnModel dataLearnModel;
 
-  PractisePage1({
+  const PractisePage1({
     super.key,
     required this.videoPlayerController,
     required this.dataLearnModel,

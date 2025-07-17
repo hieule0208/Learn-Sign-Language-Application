@@ -45,11 +45,12 @@ class AnswerCard extends HookConsumerWidget {
                     ref
                         .read(answerQuestionChosenProvider.notifier)
                         .setAnswer(answerTitle);
-                    Future.delayed(const Duration(seconds: 5), () {
+                    Future.delayed(const Duration(seconds: 2), () {
                       onPressed();
                     });
                   },
           splashColor: Colors.grey.withAlpha(30),
+          // ignore: avoid_unnecessary_containers
           child: Container(child: Center(child: Text(answerTitle))),
         ),
       ),

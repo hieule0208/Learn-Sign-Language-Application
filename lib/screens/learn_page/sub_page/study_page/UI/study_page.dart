@@ -11,7 +11,7 @@ class StudyPage extends ConsumerStatefulWidget {
   final VideoPlayerController videoPlayerController;
   final DataLearnModel dataLearnModel;
 
-  StudyPage({
+  const StudyPage({
     super.key,
     required this.videoPlayerController,
     required this.dataLearnModel,
@@ -33,8 +33,8 @@ class _StudyPageState extends ConsumerState<StudyPage> {
             videoPlayerController: widget.videoPlayerController,
           ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 widget.dataLearnModel.word.word,
@@ -42,6 +42,19 @@ class _StudyPageState extends ConsumerState<StudyPage> {
                   color: AppColors.primary,
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              SizedBox(height: 10),
+              Text(
+                widget.dataLearnModel.word.description,
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textSub,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],

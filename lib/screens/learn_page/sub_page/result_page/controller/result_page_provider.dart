@@ -1,10 +1,7 @@
 
-import 'dart:developer';
-
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/data_models/word_model.dart';
 import 'package:how_to_use_provider/services/api_services.dart';
-
 
 // theo dõi xem có thêm bao nhiêu điểm
 class AmountScoreGainedNotifier extends StateNotifier<int> {
@@ -82,40 +79,47 @@ class PostUpdatedWordsNotifier extends StateNotifier<AsyncValue<bool>> {
 
   Future<void> postWords() async {
     try {
+      // ⏳ Bắt đầu gửi dữ liệu
       state = const AsyncValue.loading();
-      log("PostUpdatedWordsNotifier: Starting POST request", name: 'PostUpdatedWordsNotifier');
+      print("📤 [PostUpdatedWordsNotifier] Bắt đầu gửi POST request...");
 
-      // Lấy danh sách từ listWordUpdatedProvider
+      // 🧾 Lấy danh sách từ đã cập nhật và điểm
       final words = ref.read(listWordUpdatedProvider) ?? [];
-      print("Lấy được từ rồi nè");
+      final score = ref.read(amountScoreGainedProvider);
+
+      // ⚠️ Nếu không có từ nào cần gửi
       if (words.isEmpty) {
-        log("PostUpdatedWordsNotifier: No words to post", name: 'PostUpdatedWordsNotifier');
+        print("⚠️ [PostUpdatedWordsNotifier] Không có từ nào để gửi.");
         state = const AsyncValue.data(false);
         return;
       }
 
+      // 📡 Gọi API
       final apiService = ApiServices();
-      final success = await apiService.postUpdatedWords(words);
-      print("vừa post xong nè $success");
+      final success = await apiService.postUpdatedWords(words, score);
+
+      // ✅ Gửi thành công
+      print("✅ [PostUpdatedWordsNotifier] Đã gửi xong, thành công: $success");
       state = AsyncValue.data(success);
-      log("PostUpdatedWordsNotifier: POST completed, success: $success",
-          name: 'PostUpdatedWordsNotifier');
     } catch (e, stackTrace) {
-      log("PostUpdatedWordsNotifier: Error posting words - $e",
-          name: 'PostUpdatedWordsNotifier', error: e, stackTrace: stackTrace);
+      // ❌ Gặp lỗi khi gửi
+      print("❌ [PostUpdatedWordsNotifier] Lỗi khi gửi dữ liệu: $e");
+      print("🧾 StackTrace: $stackTrace");
       state = const AsyncValue.data(false);
     }
   }
 
   void reset() {
+    // 🔄 Reset lại trạng thái
+    print("🔄 [PostUpdatedWordsNotifier] Đã reset trạng thái.");
     state = const AsyncValue.data(false);
   }
 }
 
 final postUpdatedWordsProvider =
     StateNotifierProvider<PostUpdatedWordsNotifier, AsyncValue<bool>>(
-  (ref) => PostUpdatedWordsNotifier(ref),
-);
+      (ref) => PostUpdatedWordsNotifier(ref),
+    );
 
 // theo dõi xem có bao nhiêu từ được học mới
 
@@ -126,7 +130,6 @@ class AmountNewWordNotifier extends StateNotifier<int> {
   void reset() => state = 0;
 }
 
-final amountNewWordProvider =
-    StateNotifierProvider<AmountNewWordNotifier, int>(
-      (ref) => AmountNewWordNotifier(),
-    );
+final amountNewWordProvider = StateNotifierProvider<AmountNewWordNotifier, int>(
+  (ref) => AmountNewWordNotifier(),
+);

@@ -22,10 +22,10 @@ class ResultPage extends StatefulHookConsumerWidget {
 class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   Widget build(BuildContext context) {
-    final score = ref.watch(amountScoreGainedProvider);
-    final listResultWord = ref.watch(listWordUpdatedProvider);
-    final metric = ref.watch(userMetricOverviewStateProvider);
-    final newLearnedWord = ref.watch(amountNewWordProvider);
+    final score = ref.read(amountScoreGainedProvider);
+    final listResultWord = ref.read(listWordUpdatedProvider);
+    final metric = ref.read(userMetricOverviewStateProvider);
+    final newLearnedWord = ref.read(amountNewWordProvider);
 
     final postWordsState = ref.watch(postUpdatedWordsProvider);
 

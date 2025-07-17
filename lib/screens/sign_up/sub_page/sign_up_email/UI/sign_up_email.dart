@@ -1,8 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/screens/sign_up/sub_page/sign_up_email/controller/sign_up_email_controller.dart';
-import 'package:how_to_use_provider/screens/sign_up/sub_page/sign_up_email/controller/sign_up_email_provider.dart';
 
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/elevated_button_custom.dart';
@@ -17,9 +15,9 @@ class SignUpEmail extends StatefulHookConsumerWidget {
 
 class _SignUpEmailState extends ConsumerState<SignUpEmail> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _passwordAgainController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordAgainController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {

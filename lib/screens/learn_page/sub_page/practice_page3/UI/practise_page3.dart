@@ -7,7 +7,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:how_to_use_provider/models/data_models/data_learn_model.dart';
 import 'package:how_to_use_provider/screens/learn_page/controller/learn_page_provider.dart';
-import 'package:how_to_use_provider/screens/learn_page/sub_page/practice_page3/Controller/practise_page3_controller.dart';
 import 'package:how_to_use_provider/screens/learn_page/sub_page/result_page/controller/result_page_provider.dart';
 import 'package:how_to_use_provider/services/api_services.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
@@ -467,10 +466,10 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
                   height: 100,
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => takePhoto(),
+                    onPressed: () => skipPractise(),
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
-                        AppColors.primary,
+                        AppColors.watchPrimary,
                       ),
                       shape: MaterialStateProperty.all(
                         RoundedRectangleBorder(
@@ -481,12 +480,6 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          FontAwesomeIcons.camera,
-                          size: 30,
-                          color: AppColors.background,
-                        ),
-                        SizedBox(width: 20),
                         Text(
                           "Bỏ qua",
                           style: TextStyle(
