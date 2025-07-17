@@ -76,6 +76,7 @@ class LearnPageController {
     ref.invalidate(learnDataStateProvider);
     ref.read(amountScoreGainedProvider.notifier).reset();
     ref.read(listWordUpdatedProvider.notifier).reset();
+    ref.read(preloadStateProvider.notifier).reset();
   }
 
   void onContinue(DataLearnModel data) {

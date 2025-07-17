@@ -18,28 +18,28 @@ class LearnDataStateNotifier extends StateNotifier<List<DataLearnModel>> {
       final apiService = ApiServices();
       // Lấy dữ liệu từ API và cập nhật trạng thái
       state = await apiService.fetchLearnData();
-      log("$state đã lấy được mấy cái này");
+      print("[LearnData] State: $state");
 
       // Lọc các phần tử có type là 'study' và cập nhật amountNewWordProvider
       final studyItems = state.where((item) => item.type == 'study').toList();
       ref.read(amountNewWordProvider.notifier).set(studyItems.length);
-      log("Đã cập nhật số từ mới");
+      print("[LearnData] Updated amountNewWord: ${studyItems.length}");
 
       // Cập nhật câu hỏi đầu tiên
       if (state.isNotEmpty) {
         ref.read(questionProvider.notifier).set(state[0]);
-        log("Đã cập nhật câu đầu tiên");
+        print("[LearnData] Set first question: ${state[0]}");
       }
 
       // Cập nhật URL list
       await ref
           .read(preloadStateProvider.notifier)
           .updateUrlsAndInitialize(
-            state.map((item) => item.mainContent).toList(),
+            state.map((item) => item.mainContent ?? '').toList(),
           );
-      log("Đã cập nhật danh sách url");
+      print("[LearnData] Updated URL list");
     } catch (e, stack) {
-      log("Lỗi khi khởi tạo LearnDataStateNotifier: $e\n$stack");
+      print("[LearnData] Error initializing LearnDataStateNotifier: $e\n$stack");
       state = [];
     }
   }
@@ -49,8 +49,8 @@ class LearnDataStateNotifier extends StateNotifier<List<DataLearnModel>> {
 
 final learnDataStateProvider =
     StateNotifierProvider<LearnDataStateNotifier, List<DataLearnModel>>(
-      (ref) => LearnDataStateNotifier(ref),
-    );
+  (ref) => LearnDataStateNotifier(ref),
+);
 
 // theo dõi xem đã làm đến câu thứ mấy rồi
 class IndexQuestionNotifier extends StateNotifier<int> {
@@ -59,14 +59,21 @@ class IndexQuestionNotifier extends StateNotifier<int> {
 
   void increment() {
     state++;
+    print("[IndexQuestion] Incremented to index: $state");
     final learnData = ref.read(learnDataStateProvider);
     if (learnData.isNotEmpty && state < learnData.length) {
       ref.read(questionProvider.notifier).set(learnData[state]);
+      print("[IndexQuestion] Set question at index $state: ${learnData[state]}");
+    } else {
+      print("[IndexQuestion] Invalid state: learnData empty or index out of range");
     }
     ref.read(preloadStateProvider.notifier).changeVideoIndex(state);
   }
 
-  void reset() => state = 0;
+  void reset() {
+    print("[IndexQuestion] Reset index to 0");
+    state = 0;
+  }
 }
 
 final indexQuestionProvider = StateNotifierProvider<IndexQuestionNotifier, int>(
@@ -77,115 +84,121 @@ final indexQuestionProvider = StateNotifierProvider<IndexQuestionNotifier, int>(
 class PreloadStateNotifier extends StateNotifier<PreloadModel> {
   final Ref ref;
   PreloadStateNotifier(this.ref)
-    : super(PreloadModel(urls: [], controllers: {}, focusedIndex: 0));
+      : super(PreloadModel(urls: [], controllers: {}, focusedIndex: 0));
+
   Future<void> updateUrlsAndInitialize(List<String> newUrls) async {
+    print('[Preload] ▶️ updateUrlsAndInitialize: newUrls length = ${newUrls.length}, URLs = $newUrls');
     // Cập nhật danh sách URLs
     state = state.copyWith(urls: newUrls);
     // Khởi tạo lại video controllers
     await initialize();
-
-    print("Khởi tạo");
+    print('[Preload] ✅ updateUrlsAndInitialize DONE: focusedIndex = ${state.focusedIndex}');
   }
 
   Future<void> initialize() async {
+    print('[Preload] ▶️ initialize: focusedIndex = ${state.focusedIndex}');
     // Khởi tạo controller cho video đầu tiên (index 0)
     await _initializeControllerAtIndex(0);
     // Preload video thứ hai (index 1)
     await _initializeControllerAtIndex(1);
+    print('[Preload] ✅ initialize DONE: controllers = ${state.controllers.keys}');
   }
 
   /// Chuyển đổi video khi index thay đổi
   void changeVideoIndex(int index) {
-    if (index > state.focusedIndex) {
-      _playNext(index); // Chuyển sang video tiếp theo
-    } else {
-      _playPrevious(index); // Quay lại video trước đó
+    print('[Preload] ▶️ changeVideoIndex: newIndex = $index, current focusedIndex = ${state.focusedIndex}');
+    if (index == state.focusedIndex) {
+      print('[Preload] ⚠️ Index unchanged: $index, no action needed');
+      return;
     }
-    // Cập nhật trạng thái với index mới
+
+    if (index > state.focusedIndex) {
+      print('[Preload] Moving forward from ${state.focusedIndex} to $index');
+      _playNext(index);
+    } else {
+      print('[Preload] Moving backward from ${state.focusedIndex} to $index');
+      _playPrevious(index);
+    }
     state = state.copyWith(focusedIndex: index);
+    print('[Preload] ✅ changeVideoIndex DONE: new focusedIndex = ${state.focusedIndex}, controllers = ${state.controllers.keys}');
   }
 
   /// Xử lý khi chuyển sang video tiếp theo
   void _playNext(int index) {
-    // Dừng video trước đó (index - 1)
-    _stopControllerAtIndex(index - 1);
-    // Hủy controller của video trước nữa (index - 2)
-    _disposeControllerAtIndex(index - 2);
-    // Preload video tiếp theo (index + 1)
-    _initializeControllerAtIndex(index + 1);
+    print('[Preload] ▶️ _playNext: index = $index, current focusedIndex = ${state.focusedIndex}');
+    _stopControllerAtIndex(index - 1); // Dừng video trước đó
+    _disposeControllerAtIndex(index - 2); // Hủy controller trước nữa
+    _initializeControllerAtIndex(index + 1); // Preload video tiếp theo
   }
 
   /// Xử lý khi quay lại video trước đó
   void _playPrevious(int index) {
-    // Dừng video tiếp theo (index + 1)
-    _stopControllerAtIndex(index + 1);
-    // Hủy controller của video sau nữa (index + 2)
-    _disposeControllerAtIndex(index + 2);
-    // Preload video trước đó (index - 1)
-    _initializeControllerAtIndex(index - 1);
+    print('[Preload] ▶️ _playPrevious: index = $index, current focusedIndex = ${state.focusedIndex}');
+    _stopControllerAtIndex(index + 1); // Dừng video tiếp theo
+    _disposeControllerAtIndex(index + 2); // Hủy controller sau nữa
+    _initializeControllerAtIndex(index - 1); // Preload video trước đó
   }
 
   /// Khởi tạo controller cho video tại index
   Future<void> _initializeControllerAtIndex(int index) async {
-    if (state.urls.length > index && index >= 0) {
+    print('[Preload] ▶️ _initializeControllerAtIndex: index = $index, urls length = ${state.urls.length}');
+    if (index >= 0 && index < state.urls.length && state.urls[index].isNotEmpty) {
       try {
-        // Tạo controller mới từ URL video
         final controller = VideoPlayerController.networkUrl(
           Uri.parse(state.urls[index]),
         );
-        // Sao chép map controllers và thêm controller mới
-        final newControllers = Map<int, VideoPlayerController>.from(
-          state.controllers,
-        );
+        final newControllers = Map<int, VideoPlayerController>.from(state.controllers);
         newControllers[index] = controller;
-        // Cập nhật trạng thái
         state = state.copyWith(controllers: newControllers);
-        // Khởi tạo controller
+        print('[Preload] Created controller for index $index, URL = ${state.urls[index]}');
         await controller.initialize();
-        log('🚀🚀🚀 INITIALIZED $index');
+        print('[Preload] ✅ INITIALIZED $index');
       } catch (e) {
-        log('🚨 ERROR INITIALIZING $index: $e');
+        print('[Preload] ❌ ERROR INITIALIZING $index: $e');
       }
+    } else {
+      print('[Preload] ⚠️ Index out of range or empty URL: index = $index, URL = ${index < state.urls.length ? state.urls[index] : 'N/A'}');
     }
   }
 
   /// Dừng video tại index
   void _stopControllerAtIndex(int index) {
-    if (state.urls.length > index &&
-        index >= 0 &&
-        state.controllers.containsKey(index)) {
+    print('[Preload] Attempting to stop controller at index: $index');
+    if (index >= 0 && index < state.urls.length && state.controllers.containsKey(index)) {
       final controller = state.controllers[index]!;
       controller.pause();
       controller.seekTo(const Duration());
-      log('🚀🚀🚀 STOPPED $index');
+      print('[Preload] ⏹ STOPPED $index');
+    } else {
+      print('[Preload] ⚠️ Cannot stop controller: index = $index out of range or not initialized');
     }
   }
 
   /// Hủy controller tại index
   void _disposeControllerAtIndex(int index) {
-    if (state.urls.length > index &&
-        index >= 0 &&
-        state.controllers.containsKey(index)) {
+    print('[Preload] Attempting to dispose controller at index: $index');
+    if (index >= 0 && index < state.urls.length && state.controllers.containsKey(index)) {
       final controller = state.controllers[index]!;
       controller.dispose();
-      // Sao chép map controllers và xóa controller tại index
-      final newControllers = Map<int, VideoPlayerController>.from(
-        state.controllers,
-      )..remove(index);
-      // Cập nhật trạng thái
+      final newControllers = Map<int, VideoPlayerController>.from(state.controllers)..remove(index);
       state = state.copyWith(controllers: newControllers);
-      log('🚀🚀🚀 DISPOSED $index');
+      print('[Preload] 🗑 DISPOSED $index');
+    } else {
+      print('[Preload] ⚠️ Cannot dispose controller: index = $index out of range or not initialized');
     }
   }
 
-  /// Hủy tất cả controllers khi StateNotifier bị dispose
   @override
   void dispose() {
+    print('[Preload] 🔁 dispose ALL controllers');
     for (final controller in state.controllers.values) {
       controller.dispose();
     }
     super.dispose();
+    print('[Preload] ✅ dispose DONE');
   }
+
+  void reset() => state = PreloadModel(urls: [], controllers: {}, focusedIndex: 0);
 }
 
 final preloadStateProvider =
@@ -197,12 +210,18 @@ final preloadStateProvider =
 class QuestionNotifier extends StateNotifier<DataLearnModel?> {
   QuestionNotifier() : super(null);
 
-  void set(DataLearnModel question) => state = question;
+  void set(DataLearnModel question) {
+    state = question;
+    print("[QuestionNotifier] Set question: $question");
+  }
 
-  void reset() => state = null;
+  void reset() {
+    print("[QuestionNotifier] Reset question to null");
+    state = null;
+  }
 }
 
 final questionProvider =
     StateNotifierProvider<QuestionNotifier, DataLearnModel?>(
-      (ref) => QuestionNotifier(),
-    );
+  (ref) => QuestionNotifier(),
+);

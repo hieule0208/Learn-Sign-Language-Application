@@ -11,12 +11,12 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
 class ApiServices {
-  final String baseUrl =
-      'https://685e100b7b57aebd2af7edd5.mockapi.io/sign-language';
-
   Future<List<DataLearnModel>> fetchLearnData() async {
+    final baseUrl = 'https://signlang-ai-main-et3a0s.laravel.cloud/api';
     try {
-      final response = await http.get(Uri.parse('$baseUrl/learn-data'));
+      final response = await http.get(
+        Uri.parse('$baseUrl/learn/${AppSingleton().userId}'),
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         print(data.map((json) => DataLearnModel.fromJson(json)).toList());
@@ -32,7 +32,9 @@ class ApiServices {
   Future<List<TopicModel>> fetchTopicData() async {
     final baseURL = "https://signlang-ai-main-et3a0s.laravel.cloud/api";
     try {
-      final response = await http.get(Uri.parse("$baseURL/topic-list/${AppSingleton().userId}"));
+      final response = await http.get(
+        Uri.parse("$baseURL/topic-list/${AppSingleton().userId}"),
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => TopicModel.fromJson(json)).toList();
@@ -47,7 +49,9 @@ class ApiServices {
   Future<List<WordModel>> fetchMyWordData() async {
     final baseURL = "https://signlang-ai-main-et3a0s.laravel.cloud/api";
     try {
-      final response = await http.get(Uri.parse("$baseURL/my-word-list/${AppSingleton().userId}"));
+      final response = await http.get(
+        Uri.parse("$baseURL/my-word-list/${AppSingleton().userId}"),
+      );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         print("data dict $data");
@@ -66,7 +70,9 @@ class ApiServices {
 
     try {
       final response = await http.get(
-        Uri.parse("$baseUrl/topic/$chosenTopic/word-list/${AppSingleton().userId}"),
+        Uri.parse(
+          "$baseUrl/topic/$chosenTopic/word-list/${AppSingleton().userId}",
+        ),
       );
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -99,41 +105,40 @@ class ApiServices {
   }
 
   Future<bool> postUpdatedWords(List<WordModel> words, int score) async {
-  final baseURL = "https://signlang-ai-main-et3a0s.laravel.cloud/api";
-  try {
-    final data = {
-      'score': score,
-      'words': words.map((word) => word.toJson()).toList(),
-    };
+    final baseURL = "https://signlang-ai-main-et3a0s.laravel.cloud/api";
+    try {
+      final data = {
+        'score': score,
+        'words': words.map((word) => word.toJson()).toList(),
+      };
 
-    final response = await http.post(
-      Uri.parse('$baseURL/update-word/${AppSingleton().userId}'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(data),
-    );
-
-    print(response.statusCode);
-
-    if (response.statusCode == 200) {
-      print("🎉 POST thành công");
-      print('POST successful: ${response.body}');
-      return true;
-    } else {
-      print("⚠️ POST thất bại (status != 200)");
-      throw Exception(
-        'Failed to post updated words: ${response.statusCode} - ${response.body}',
+      final response = await http.post(
+        Uri.parse('$baseURL/update-word/${AppSingleton().userId}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(data),
       );
+
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
+        print("🎉 POST thành công");
+        print('POST successful: ${response.body}');
+        return true;
+      } else {
+        print("⚠️ POST thất bại (status != 200)");
+        throw Exception(
+          'Failed to post updated words: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      print("❌ POST gặp lỗi exception");
+      throw Exception('Error posting updated words: $e');
     }
-  } catch (e) {
-    print("❌ POST gặp lỗi exception");
-    throw Exception('Error posting updated words: $e');
   }
-}
 
   Future<String?> postCapturedImage(XFile image) async {
-    String apiUrl = "https://sign-language-api-53044935237.asia-southeast1.run.app";
+    String apiUrl =
+        "https://sign-language-api-53044935237.asia-southeast1.run.app";
     final Uri predictUrl = Uri.parse("$apiUrl/predict");
 
     try {
@@ -146,9 +151,9 @@ class ApiServices {
       // ==========================================================
       final fileStream = http.ByteStream(image.openRead());
       final fileLength = await image.length();
-      
+
       final multipartFile = http.MultipartFile(
-        'file',         // <-- Tên trường (field name) phải là 'file'
+        'file', // <-- Tên trường (field name) phải là 'file'
         fileStream,
         fileLength,
         filename: path.basename(image.path), // Tên file
@@ -156,13 +161,13 @@ class ApiServices {
 
       // Thêm file đã được tạo vào yêu cầu
       request.files.add(multipartFile);
-      
+
       print('🚀 Sending image to API at $predictUrl');
       final streamedResponse = await request.send();
 
       // Đọc phản hồi
       final response = await http.Response.fromStream(streamedResponse);
-      
+
       if (response.statusCode == 200) {
         // Xử lý phản hồi JSON (như bạn đã nói API của bạn trả về JSON)
         print('✅ Raw JSON response from server: ${response.body}');
@@ -177,7 +182,9 @@ class ApiServices {
         }
       } else {
         // In ra lỗi chi tiết từ server để gỡ lỗi
-        print('❌ Failed to get prediction. Status code: ${response.statusCode}');
+        print(
+          '❌ Failed to get prediction. Status code: ${response.statusCode}',
+        );
         print('❌ Server Error Body: ${response.body}');
         return null;
       }
