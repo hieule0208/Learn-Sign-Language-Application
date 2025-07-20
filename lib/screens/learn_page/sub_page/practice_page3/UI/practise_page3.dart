@@ -29,6 +29,7 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
   XFile? image;
   int replayTime = 0;
   bool? isCorrect = true;
+  bool isLoading = false; // New flag to track API loading state
 
   @override
   void initState() {
@@ -44,13 +45,10 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
         return;
       }
 
-      _controller = CameraController(
-        cameras[0], // Camera sau hoặc trước tùy theo vị trí
-        ResolutionPreset.medium,
-      );
+      _controller = CameraController(cameras[0], ResolutionPreset.medium);
 
       _initializeControllerFuture = _controller!.initialize();
-      setState(() {}); // để FutureBuilder cập nhật
+      setState(() {});
     } catch (e) {
       setState(() => _error = "Failed to initialize camera: $e");
     }
@@ -73,7 +71,7 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
     try {
       await _initializeControllerFuture;
       final capturedImage = await _controller!.takePicture();
-      _disposeCamera(); // Dispose camera sau khi chụp
+      _disposeCamera();
       setState(() {
         image = capturedImage;
       });
@@ -85,11 +83,16 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
   void retry() {
     setState(() {
       image = null;
+      isLoading = false; // Reset loading state
     });
-    _initCamera(); // Khởi động lại camera
+    _initCamera();
   }
 
   void confirmLogic(XFile imageCaptured) async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
     final apiService = ApiServices();
     String? answer;
     try {
@@ -97,16 +100,18 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
           .postCapturedImage(imageCaptured)
           .timeout(const Duration(seconds: 7), onTimeout: () => null);
     } catch (e) {
-      return null;
+      setState(() {
+        isLoading = false; // Stop loading on error
+      });
+      return;
     }
-
-    print(answer);
 
     if (answer == null) {
       retry();
       setState(() {
         isCorrect = null;
         replayTime++;
+        isLoading = false; // Stop loading
       });
       return;
     }
@@ -114,37 +119,42 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
     if (answer.toLowerCase() == widget.dataLearnModel.word.word.toLowerCase()) {
       print("Đúng rồi thằng ML");
 
-      // dispose các cái khác nữa
       _disposeCamera();
       image = null;
       replayTime = 0;
       isCorrect = true;
-      setState(() {});
+      setState(() {
+        isLoading = false; // Stop loading
+      });
 
-      // Thực hiện add từ vào trong list báo cáo lại cho server
       ref.read(amountScoreGainedProvider.notifier).increment(Score.practise);
       ref
           .read(listWordUpdatedProvider.notifier)
           .add(widget.dataLearnModel.word);
 
-      // Tăng index để chuyển sang bài khác
       ref.read(indexQuestionProvider.notifier).increment();
     } else {
-      setState(() {
-        retry();
-        isCorrect = false;
-        replayTime++;
-      });
+      if (replayTime > 2) {
+        _disposeCamera();
+      } else {
+        setState(() {
+          retry();
+          isCorrect = false;
+          replayTime++;
+          isLoading = false; // Stop loading
+        });
+      }
     }
   }
 
   void skipPractise() {
-    _disposeCamera();
     image = null;
     replayTime = 0;
     isCorrect = true;
-    setState(() {});
-    
+    setState(() {
+      isLoading = false; // Reset loading state
+    });
+
     ref.read(indexQuestionProvider.notifier).increment();
   }
 
@@ -159,200 +169,336 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            // thông báo lỗi
-            isCorrect == null
-                ? Container(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.watchBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.watchPrimary, width: 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Gửi dữ liệu lỗi, vui lòng thử lại!",
-                      style: TextStyle(
-                        color: AppColors.watchPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                )
-                : isCorrect == false
-                ? Container(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.watchBackground,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.watchPrimary, width: 2),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Đáp án sai, vui lòng thử lại!",
-                      style: TextStyle(
-                        color: AppColors.watchPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                )
-                : Container(),
-            // khung ảnh
-            // Khi ảnh chưa được chụp thì hiện khung chụp
-            image == null
-                ? _initializeControllerFuture == null
-                    ? AspectRatio(
-                      aspectRatio: 1,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(27),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(50),
-                              blurRadius: 28,
-                              offset: Offset(0, 12),
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withAlpha(50),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+      body: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Error or incorrect answer message
+                isCorrect == null
+                    ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.watchBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.watchPrimary,
+                          width: 2,
                         ),
-                        child: Center(
-                          child: LoadingState(
-                            imagePath: "lib/assets/image/gestura_logo.png",
-                            size: 150,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Gửi dữ liệu lỗi, vui lòng thử lại!",
+                          style: TextStyle(
+                            color: AppColors.watchPrimary,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     )
-                    : FutureBuilder<void>(
-                      future: _initializeControllerFuture,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          return Container(
+                    : isCorrect == false
+                    ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.watchBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.watchPrimary,
+                          width: 2,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Đáp án sai, vui lòng thử lại!",
+                          style: TextStyle(
+                            color: AppColors.watchPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                    : Container(),
+                // Camera preview or captured image
+                image == null
+                    ? _initializeControllerFuture == null
+                        ? AspectRatio(
+                          aspectRatio: 1,
+                          child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(27),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withAlpha(50),
                                   blurRadius: 28,
-                                  offset: Offset(0, 12),
+                                  offset: const Offset(0, 12),
                                   spreadRadius: 2,
                                 ),
                                 BoxShadow(
                                   color: Colors.black.withAlpha(50),
                                   blurRadius: 8,
-                                  offset: Offset(0, 2),
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                20,
-                              ), // 👈 Bo góc ở đây
-                              child: ClipRect(
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  heightFactor: 0.75, // crop từ 4:3 về 1:1
-                                  child: CameraPreview(_controller!),
-                                ),
+                            child: Center(
+                              child: LoadingState(
+                                imagePath: "lib/assets/image/gestura_logo.png",
+                                size: 150,
                               ),
                             ),
-                          );
-                        } else {
-                          return AspectRatio(
-                            aspectRatio: 1,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(27),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withAlpha(50),
-                                    blurRadius: 28,
-                                    offset: Offset(0, 12),
-                                    spreadRadius: 2,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.black.withAlpha(50),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: LoadingState(
-                                  imagePath:
-                                      "lib/assets/image/gestura_logo.png",
-                                  size: 150,
+                          ),
+                        )
+                        : FutureBuilder<void>(
+                          future: _initializeControllerFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(27),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(50),
+                                      blurRadius: 28,
+                                      offset: const Offset(0, 12),
+                                      spreadRadius: 2,
+                                    ),
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(50),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                    )
-                // Khi ảnh đã chụp thì hiện ảnh đã chụp
-                : Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(27),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 28,
-                        offset: Offset(0, 12),
-                        spreadRadius: 2,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: ClipRect(
+                                    child: Align(
+                                      alignment: Alignment.center,
+                                      heightFactor: 0.75,
+                                      child: CameraPreview(_controller!),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return AspectRatio(
+                                aspectRatio: 1,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(27),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(50),
+                                        blurRadius: 28,
+                                        offset: const Offset(0, 12),
+                                        spreadRadius: 2,
+                                      ),
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(50),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: LoadingState(
+                                      imagePath:
+                                          "lib/assets/image/gestura_logo.png",
+                                      size: 150,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        )
+                    : Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(27),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(50),
+                            blurRadius: 28,
+                            offset: const Offset(0, 12),
+                            spreadRadius: 2,
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withAlpha(50),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20), // 👈 Bo góc ở đây
-                    child: ClipRect(
-                      child: Align(
-                        alignment: Alignment.center,
-                        heightFactor: 0.75, // crop từ 4:3 về 1:1
-                        child: Image.file(File(image!.path)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: ClipRect(
+                          child: Align(
+                            alignment: Alignment.center,
+                            heightFactor: 0.75,
+                            child: Image.file(File(image!.path)),
+                          ),
+                        ),
                       ),
                     ),
+                // Question text
+                Text(
+                  widget.dataLearnModel.word.word,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-            // Nội dung câu hỏi
-            Text(
-              widget.dataLearnModel.word.word,
-              style: TextStyle(
-                color: AppColors.primary,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            // Hệ thống nút điểu khiển
-            replayTime <= 2
-                ? image == null
-                    // Nút chụp ảnh
-                    ? Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
+                // Button controls
+                replayTime <= 2
+                    ? image == null
+                        ? Container(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          height: 100,
+                          width: 220,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : () => takePhoto(),
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(
+                                AppColors.primary,
+                              ),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.camera,
+                                  size: 30,
+                                  color: AppColors.background,
+                                ),
+                                const SizedBox(width: 20),
+                                Text(
+                                  "Chụp ảnh",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.background,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Retry button
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              height: 100,
+                              width: 150,
+                              child: ElevatedButton(
+                                onPressed: isLoading ? null : () => retry(),
+                                style: ButtonStyle(
+                                  overlayColor: MaterialStateProperty.all(
+                                    isLoading
+                                        ? AppColors.textSub.withAlpha(
+                                          90,
+                                        )
+                                        : null,
+                                  ),
+                                  backgroundColor: MaterialStateProperty.all(
+                                    AppColors.primary,
+                                  ),
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      FontAwesomeIcons.rotateRight,
+                                      size: 25,
+                                      color: AppColors.background,
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Text(
+                                      "Thử lại",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.background,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Confirm button
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              height: 100,
+                              width: 175,
+                              child: ElevatedButton(
+                                onPressed:
+                                    isLoading
+                                        ? null
+                                        : () => confirmLogic(image!),
+                                style: ButtonStyle(
+                                  overlayColor: MaterialStateProperty.all(
+                                    isLoading
+                                        ? AppColors.textSub.withAlpha(
+                                          90,
+                                        )
+                                        : null,
+                                  ),
+                                  backgroundColor: MaterialStateProperty.all(
+                                    AppColors.primary,
+                                  ),
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      FontAwesomeIcons.check,
+                                      size: 25,
+                                      color: AppColors.background,
+                                    ),
+                                    const SizedBox(width: 20),
+                                    Text(
+                                      "Xác nhận",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.background,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                    : Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                       height: 100,
-                      width: 220,
+                      width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => takePhoto(),
+                        onPressed: isLoading ? null : () => skipPractise(),
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                            AppColors.primary, 
+                            AppColors.watchPrimary,
                           ),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
@@ -363,14 +509,8 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              FontAwesomeIcons.camera,
-                              size: 30,
-                              color: AppColors.background,
-                            ),
-                            SizedBox(width: 20),
                             Text(
-                              "Chụp ảnh",
+                              "Bỏ qua",
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -380,120 +520,11 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
                           ],
                         ),
                       ),
-                    )
-                    : Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        // Nút thử lại
-                        Container(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          height: 100,
-                          width: 150,
-                          child: ElevatedButton(
-                            onPressed: () => retry(),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                AppColors.primary,
-                              ),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  FontAwesomeIcons.rotateRight,
-                                  size: 25,
-                                  color: AppColors.background,
-                                ),
-                                SizedBox(width: 20),
-                                Text(
-                                  "Thử lại",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.background,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Nút xác nhận
-                        Container(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          height: 100,
-                          width: 175,
-                          child: ElevatedButton(
-                            onPressed: () => confirmLogic(image!),
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                AppColors.primary,
-                              ),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  FontAwesomeIcons.check,
-                                  size: 25,
-                                  color: AppColors.background,
-                                ),
-                                SizedBox(width: 20),
-
-                                Text(
-                                  "Xác nhận",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.background,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                : Container(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  height: 100,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => skipPractise(),
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                        AppColors.watchPrimary,
-                      ),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Bỏ qua",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.background,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

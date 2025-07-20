@@ -105,10 +105,8 @@ class LearnPageController {
           } else {
             // thêm vào report là thằng này sai
             ref.read(amountScoreGainedProvider.notifier).increment(Score.wrong);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => WrongPage()),
-            );
+            ref.read(answerQuestionChosenProvider.notifier).reset();
+            ref.read(indexQuestionProvider.notifier).increment();
           }
         case "practise2":
           String answerQuestionSelected =
@@ -127,10 +125,8 @@ class LearnPageController {
           } else {
             // thêm vào report là thằng này sai
             ref.read(amountScoreGainedProvider.notifier).increment(Score.wrong);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => WrongPage()),
-            );
+            ref.read(answerQuestionSelectedProvider.notifier).reset();
+            ref.read(indexQuestionProvider.notifier).increment();
           }
         case "practise3":
       }

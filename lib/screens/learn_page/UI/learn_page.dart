@@ -22,15 +22,11 @@ class LearnPage extends StatefulHookConsumerWidget {
 class _LearnPageState extends ConsumerState<LearnPage> {
   @override
   Widget build(BuildContext context) {
-    // Theo dõi trạng thái dữ liệu học tập.
     final learnDataAsync = ref.watch(learnDataStateProvider);
-    // Chỉ cần theo dõi `learnDataAsync` để hiển thị trạng thái tải.
-    // Các provider khác sẽ được sử dụng bên trong các khối logic.
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        // Chỉ hiển thị nút thoát khi đang trong quá trình học.
         leading:
             learnDataAsync.isNotEmpty &&
                     ref.watch(indexQuestionProvider) < learnDataAsync.length
@@ -39,83 +35,107 @@ class _LearnPageState extends ConsumerState<LearnPage> {
                       () => LearnPageController(ref, context).exitLearn(),
                   icon: const Icon(FontAwesomeIcons.arrowLeft),
                 )
-                : null, // Ẩn nút khi ở trang kết quả
+                : null,
         surfaceTintColor: AppColors.background,
         backgroundColor: AppColors.background,
         automaticallyImplyLeading: false,
       ),
-      // Xử lý trạng thái tải ở đây
       body:
           learnDataAsync.isEmpty
               ? const Center(child: CircularProgressIndicator())
-              : _buildPageContent(learnDataAsync),
+              : AnimatedSwitcher(
+                duration: const Duration(
+                  milliseconds: 700,
+                ),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  // Định nghĩa Tween cho hiệu ứng scale
+                  final scaleTween = Tween<double>(
+                    begin: 0.95, // Widget mới bắt đầu nhỏ hơn một chút
+                    end: 1.0,   // Widget mới đạt kích thước đầy đủ
+                  );
+
+                  // Định nghĩa Tween cho hiệu ứng fade
+                  final fadeTween = Tween<double>(
+                    begin: 0.0, // Widget mới bắt đầu trong suốt
+                    end: 1.0,   // Widget mới trở nên hoàn toàn rõ
+                  );
+
+                  // Kết hợp ScaleTransition và FadeTransition cho widget mới
+                  if (child.key == _buildPageContent(learnDataAsync).key) {
+                    return FadeTransition(
+                      opacity: fadeTween.animate(animation),
+                      child: ScaleTransition(
+                        scale: scaleTween.animate(animation),
+                        child: child,
+                      ),
+                    );
+                  } else {
+                    // Widget cũ sẽ mờ dần và thu nhỏ
+                    return FadeTransition(
+                      opacity: fadeTween.animate(animation),
+                      child: ScaleTransition(
+                        scale: scaleTween.animate(animation),
+                        child: child,
+                      ),
+                    );
+                  }
+                },
+                child: _buildPageContent(learnDataAsync),
+              ),
     );
   }
 
   Widget _buildPageContent(List<DataLearnModel> learnData) {
     final questionIndex = ref.watch(indexQuestionProvider);
 
-    // Kiểm tra xem bài học đã kết thúc chưa
     if (questionIndex >= learnData.length) {
-      return const ResultPage();
+      return const ResultPage(key: ValueKey('result_page'));
     }
 
-    // Lấy trạng thái preloading
     final preloadState = ref.watch(preloadStateProvider);
-
-    // Lấy dữ liệu cho câu hỏi hiện tại
     final currentQuestion = learnData[questionIndex];
-
-    // Lấy controller cho index hiện tại. Nó có thể là null!
     final VideoPlayerController? currentController =
         preloadState.controllers[questionIndex];
 
-    // TẠO MỘT KEY DUY NHẤT CHO MỖI CÂU HỎI
-    // Sử dụng ID của từ để đảm bảo nó là duy nhất và ổn định.
     final Key uniqueKey = ValueKey(currentQuestion.word.id);
 
     switch (currentQuestion.type) {
       case 'study':
       case 'practise1':
       case 'practise2':
-        // Đối với các loại cần video, hãy kiểm tra xem controller đã sẵn sàng chưa.
         if (currentController != null) {
-          // Phân luồng đến đúng trang với controller đã được xác nhận là không null.
           if (currentQuestion.type == 'study') {
             return StudyPage(
-              key: uniqueKey, // <-- THÊM KEY VÀO ĐÂY
+              key: uniqueKey,
               dataLearnModel: currentQuestion,
               videoPlayerController: currentController,
             );
           } else if (currentQuestion.type == 'practise1') {
             return PractisePage1(
-              key: uniqueKey, // <-- THÊM KEY VÀO ĐÂY
+              key: uniqueKey,
               dataLearnModel: currentQuestion,
               videoPlayerController: currentController,
             );
           } else {
-            // practise2
             return PractisePage2(
-              key: uniqueKey, // <-- THÊM KEY VÀO ĐÂY
+              key: uniqueKey,
               dataLearnModel: currentQuestion,
               videoPlayerController: currentController,
             );
           }
         } else {
-          // Hiển thị một chỉ báo tải nếu controller chưa sẵn sàng.
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            key: ValueKey('loading_${currentQuestion.word.id}'),
+            child: const CircularProgressIndicator(),
+          );
         }
 
       case 'practise3':
-        // Loại này cũng nên có một key để đảm bảo tính nhất quán.
-        return PractisePage3(
-          key: uniqueKey, // <-- THÊM KEY VÀO ĐÂY
-          dataLearnModel: currentQuestion,
-        );
+        return PractisePage3(key: uniqueKey, dataLearnModel: currentQuestion);
 
       default:
-        // Xử lý các loại không xác định một cách an toàn.
         return Center(
+          key: ValueKey('error_${currentQuestion.word.id}'),
           child: Text('Loại câu hỏi không hợp lệ: ${currentQuestion.type}'),
         );
     }
