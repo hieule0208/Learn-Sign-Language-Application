@@ -91,11 +91,10 @@ class LearnPageController {
           // chuyển page
           ref.read(indexQuestionProvider.notifier).increment();
         case "practise1":
-          if (ref.watch(answerQuestionChosenProvider) ==
-              ref.watch(questionProvider)?.word.word) {
+          if (ref.read(answerQuestionChosenProvider) ==
+              ref.read(questionProvider)?.word.word) {
             //reset trạng thái để cho câu tiếp theo
             ref.read(answerQuestionChosenProvider.notifier).reset();
-            ref.read(questionProvider.notifier).reset();
             //thêm vào report
             ref.read(listWordUpdatedProvider.notifier).add(data.word);
             ref
@@ -113,9 +112,9 @@ class LearnPageController {
           }
         case "practise2":
           String answerQuestionSelected =
-              ref.watch(answerQuestionSelectedProvider).toLowerCase().trim();
+              ref.read(answerQuestionSelectedProvider).toLowerCase().trim();
           String answerQuestion =
-              ref.watch(questionProvider)!.word.word.toLowerCase().trim();
+              ref.read(questionProvider)!.word.word.toLowerCase().trim();
           if (answerQuestionSelected == answerQuestion) {
             //thêm vào report
             ref.read(listWordUpdatedProvider.notifier).add(data.word);
@@ -124,7 +123,6 @@ class LearnPageController {
                 .increment(Score.practise);
             // reset trạng thái để cho câu tiếp theo
             ref.read(answerQuestionSelectedProvider.notifier).reset();
-            ref.read(questionProvider.notifier).reset();
             ref.read(indexQuestionProvider.notifier).increment();
           } else {
             // thêm vào report là thằng này sai

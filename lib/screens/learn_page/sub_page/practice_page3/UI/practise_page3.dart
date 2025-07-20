@@ -352,7 +352,7 @@ class PractisePage3State extends ConsumerState<PractisePage3> {
                         onPressed: () => takePhoto(),
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
-                            AppColors.primary,
+                            AppColors.primary, 
                           ),
                           shape: MaterialStateProperty.all(
                             RoundedRectangleBorder(
