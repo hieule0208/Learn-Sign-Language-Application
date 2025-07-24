@@ -1,8 +1,9 @@
-# how_to_use_provider
+# Learn-Sign-Language-Application
+
 
 ## Giới thiệu
 
-**how_to_use_provider** là ứng dụng di động Flutter được phát triển nhằm hỗ trợ người câm điếc học ngôn ngữ ký hiệu một cách hiệu quả, hiện đại và thân thiện. Ứng dụng sử dụng các công nghệ quản lý trạng thái tiên tiến như Riverpod, tích hợp Firebase, và nhiều tính năng học tập thông minh.
+**Learn-Sign-Language-Application** là ứng dụng di động Flutter được phát triển nhằm hỗ trợ người câm điếc học ngôn ngữ ký hiệu một cách hiệu quả, hiện đại và thân thiện. Ứng dụng sử dụng các công nghệ quản lý trạng thái tiên tiến như Riverpod, tích hợp Firebase, và nhiều tính năng học tập thông minh.
 
 ## Tính năng nổi bật
 
