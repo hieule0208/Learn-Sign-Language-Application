@@ -7,6 +7,7 @@ import 'package:how_to_use_provider/models/data_models/topic_model.dart';
 import 'package:how_to_use_provider/screens/scenario/controller/scenario_controller.dart';
 import 'package:how_to_use_provider/screens/scenario/controller/scenario_provider.dart';
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
+import 'package:how_to_use_provider/widgets/loading_state.dart';
 import 'package:how_to_use_provider/widgets/scenario_progress_list_tile.dart';
 import 'package:how_to_use_provider/widgets/search_bar.dart';
 
@@ -297,6 +298,11 @@ class _ScenarioState extends ConsumerState<Scenario> {
             ),
           ],
         )
-        : Center(child: CircularProgressIndicator());
+        : Center(
+          child: LoadingState(
+            imagePath: 'lib/assets/image/gestura_logo.png',
+            size: 150,
+          ),
+        );
   }
 }

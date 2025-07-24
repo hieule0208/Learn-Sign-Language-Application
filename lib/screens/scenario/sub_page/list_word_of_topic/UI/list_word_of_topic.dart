@@ -6,6 +6,7 @@ import 'package:how_to_use_provider/screens/scenario/sub_page/list_word_of_topic
 import 'package:how_to_use_provider/utilities/color_palettes.dart';
 import 'package:how_to_use_provider/widgets/dictionary_word_list_item.dart';
 import 'package:how_to_use_provider/widgets/elevated_button_custom.dart';
+import 'package:how_to_use_provider/widgets/loading_state.dart';
 
 class ListWordOfTopic extends StatefulHookConsumerWidget {
   const ListWordOfTopic({super.key});
@@ -57,6 +58,7 @@ class _ListWordOfTopicState extends ConsumerState<ListWordOfTopic> {
                           width: MediaQuery.of(context).size.width / 4,
                           child: Center(
                             child: Text(
+                              maxLines: 2,
                               "${(topicChosen.numberOfLearnedWord / topicChosen.numberOfWord * 100).toInt()}%",
                               style: TextStyle(
                                 fontSize: 20,
@@ -69,64 +71,70 @@ class _ListWordOfTopicState extends ConsumerState<ListWordOfTopic> {
                     ),
                     //Info
                     SizedBox(width: 20),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        //title
-                        Text(
-                          maxLines: 2,
-                          topicChosen.name,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        SizedBox(height: 10),
-                        //metric
-                        Text(
-                          "${topicChosen.numberOfLearnedWord} / ${topicChosen.numberOfWord} từ và cụm từ",
-                        ),
-                        SizedBox(height: 10),
-                        //button
-                        ElevatedButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                              Colors.white,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //title
+                          Text(
+                            maxLines: 2,
+                            topicChosen.name,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
                             ),
-                            shape:
-                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    side: BorderSide(
-                                      color: AppColors.secondBackground,
-                                      width: 2,
-                                    ),
+                            overflow: TextOverflow.clip,
+                          ),
+                          SizedBox(height: 10),
+                          //metric
+                          Text(
+                            "${topicChosen.numberOfLearnedWord} / ${topicChosen.numberOfWord} từ và cụm từ",
+                          ),
+                          SizedBox(height: 10),
+                          //button
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all<Color>(
+                                Colors.white,
+                              ),
+                              shape: WidgetStateProperty.all<
+                                RoundedRectangleBorder
+                              >(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(
+                                    color: AppColors.secondBackground,
+                                    width: 2,
                                   ),
                                 ),
-                            padding: WidgetStateProperty.all<EdgeInsets>(
-                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              ),
+                              padding: WidgetStateProperty.all<EdgeInsets>(
+                                EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                              ),
+                            ),
+                            onPressed: () {},
+                            child: Row(
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.check,
+                                  color: AppColors.primary,
+                                ),
+                                SizedBox(width: 10),
+                                Text(
+                                  "Đánh dấu tất cả đã biết",
+                                  style: TextStyle(fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
                           ),
-                          onPressed: () {},
-                          child: Row(
-                            children: [
-                              Icon(
-                                FontAwesomeIcons.check,
-                                color: AppColors.primary,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                "Đánh dấu tất cả đã biết",
-                                style: TextStyle(fontSize: 12),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -166,7 +174,12 @@ class _ListWordOfTopicState extends ConsumerState<ListWordOfTopic> {
       loading:
           () => const Scaffold(
             backgroundColor: Colors.white,
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: LoadingState(
+                imagePath: 'lib/assets/image/gestura_logo.png',
+                size: 150,
+              ),
+            ),
           ),
     );
   }

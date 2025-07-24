@@ -113,7 +113,7 @@ class ApiServices {
       };
 
       final response = await http.post(
-        Uri.parse('$baseURL/update-word/${AppSingleton().userId}'),
+        Uri.parse('$baseURL/update-words/${AppSingleton().userId}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(data),
       );

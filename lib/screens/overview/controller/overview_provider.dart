@@ -17,7 +17,7 @@ class UserMetricOverviewStateNotifier extends StateNotifier<UserMetricModel> {
     try {
       final apiService = AppLaunchServices();
       state = await apiService.fetchUserMetricOverview();
-      log("UserMetricOverviewStateNotifier: Fetched metrics - $state");
+      log("UserMetricOverviewStateNotifier: Fetched metrics - ${state.totalScore}");
 
       // Kích hoạt LearnDataStateNotifier
       await ref.read(learnDataStateProvider.notifier).initialize();

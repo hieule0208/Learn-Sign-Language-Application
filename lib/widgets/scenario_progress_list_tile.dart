@@ -46,7 +46,7 @@ class _ScenarioProgressListTileState
             });
           },
           child: Container(
-            padding: EdgeInsets.symmetric( vertical: 15),
+            padding: EdgeInsets.symmetric(vertical: 15),
             decoration: BoxDecoration(
               color:
                   _isPressed
@@ -70,9 +70,11 @@ class _ScenarioProgressListTileState
                           ? Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              
                               borderRadius: BorderRadius.circular(99),
-                              border: Border.all(color: AppColors.primary, width: 3)
+                              border: Border.all(
+                                color: AppColors.primary,
+                                width: 3,
+                              ),
                             ),
                             child: Icon(
                               FontAwesomeIcons.check,
@@ -111,25 +113,27 @@ class _ScenarioProgressListTileState
                             ],
                           ),
                       SizedBox(width: 20),
-                      // nội dung chính của topic 
-                      Container(
-                        margin: EdgeInsets.only(right: 50),
-                        child: Text(
-                          widget.topic.name,
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                      // nội dung chính của topic
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(right: 100),
+                          child: Text(
+                            widget.topic.name,
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: 10),
-                Divider()
+                Divider(),
               ],
             ),
           ),
@@ -159,11 +163,11 @@ class _ScenarioProgressListTileState
                   child: ElevatedButton(
                     onPressed: () => widget.continueLearn,
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                        (Set<WidgetState> states) {
-                          return AppColors.background;
-                        },
-                      ),
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>((
+                        Set<WidgetState> states,
+                      ) {
+                        return AppColors.background;
+                      }),
                       overlayColor: WidgetStateProperty.resolveWith<Color>((
                         Set<WidgetState> states,
                       ) {

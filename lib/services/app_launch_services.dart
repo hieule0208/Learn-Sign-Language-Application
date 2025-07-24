@@ -12,6 +12,7 @@ class AppLaunchServices {
       final response = await http.get(Uri.parse('$baseUrl/user-metric/${AppSingleton().userId}'));
       print(AppSingleton().userId);
       print(response.statusCode);
+      print('Response body: ${response.body}'); // Log JSON received
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return UserMetricModel.fromJson(data);
